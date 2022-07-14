@@ -3,14 +3,8 @@ body {
     margin: 20px;
 }
 
-ol, ul {
-    padding-left: 30px;
-}
-
 .board {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 50px;
 }
 
 .board-row {
@@ -24,10 +18,6 @@ ol, ul {
     display: table;
 }
 
-.status {
-    margin-bottom: 10px;
-}
-
 .square {
     display: flex;
     border: 1px solid #999;
@@ -37,7 +27,7 @@ ol, ul {
     height: 64px;
     margin-right: -1px;
     margin-top: -1px;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     width: 64px;
 }
@@ -50,6 +40,10 @@ ol, ul {
     background: #65bed0
 }
 
+.selected {
+    filter: brightness(80%);
+}
+
 .piece {
     height: auto;
     width: auto;
@@ -57,19 +51,28 @@ ol, ul {
     max-width: 64px;
 }
 
-.square:focus {
-    outline: none;
+.available {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #909090;
+    opacity: 0.75;
 }
 
-.kbd-navigation .square:focus {
-    background: #ddd;
+.num-label {
+    padding: 10px;
+    margin: 10px;
 }
 
-.game {
+.alpha-row {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    width: auto;
+
 }
 
-.game-info {
-    margin-left: 20px;
+.alpha-label {
+    padding: 16px 26.5px 16px;
 }
+

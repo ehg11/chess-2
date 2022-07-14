@@ -13,7 +13,7 @@ export var init_board_state = [
     },
     {
         type: "pawn",
-        position: "c2",
+        position: "c1",
         isWhite: true,
         alive: true,
     },
@@ -31,7 +31,7 @@ export var init_board_state = [
     },
     {
         type: "pawn",
-        position: "f2",
+        position: "f1",
         isWhite: true,
         alive: true,
     },
@@ -49,13 +49,13 @@ export var init_board_state = [
     },
     {
         type: "bishop",
-        position: "c1",
+        position: "c2",
         isWhite: true,
         alive: true,
     },
     {
         type: "bishop",
-        position: "f1",
+        position: "f2",
         isWhite: true,
         alive: true,
     },
@@ -109,7 +109,7 @@ export var init_board_state = [
     },
     {
         type: "pawn",
-        position: "c7",
+        position: "c8",
         isWhite: false,
         alive: true,
     },
@@ -127,7 +127,7 @@ export var init_board_state = [
     },
     {
         type: "pawn",
-        position: "f7",
+        position: "f8",
         isWhite: false,
         alive: true,
     },
@@ -145,13 +145,13 @@ export var init_board_state = [
     },
     {
         type: "bishop",
-        position: "c8",
+        position: "c7",
         isWhite: false,
         alive: true,
     },
     {
         type: "bishop",
-        position: "f8",
+        position: "f7",
         isWhite: false,
         alive: true,
     },

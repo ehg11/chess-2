@@ -14,17 +14,18 @@ export default function Square(props) {
     }
 
     if( isBlue() ) {
-        console.log(props.img);
         return (
-            <button className="square blue" onClick={ props.onClick }>
+            <button className={`square blue ${props.selected ? "selected" : ""}`} onClick={ props.onClick }>
                 <img className="piece" src={ getPath(props.piece, props.color) } alt={ props.piece }/>
+                <div className={`${props.available ? "available" : ""}`}></div>
             </button>
         )
     }
     else {
         return (
-            <button className="square white" onClick={ props.onClick }>
+            <button className={`square white ${props.selected ? "selected" : ""}`} onClick={ props.onClick }>
                 <img className="piece" src={ getPath(props.piece, props.color) } alt={ props.piece }/>
+                <div className={`${props.available ? "available" : ""}`}></div>
             </button>
         )
     }
