@@ -26,7 +26,7 @@ ol, ul {
 
 .status {
     margin-bottom: 10px;
-    }
+}
 
 .square {
     display: flex;
@@ -34,12 +34,12 @@ ol, ul {
     font-size: 12px;
     font-weight: bold;
     line-height: 34px;
-    height: 70px;
+    height: 64px;
     margin-right: -1px;
     margin-top: -1px;
     align-items: flex-end;
-    justify-content: left;
-    width: 70px;
+    justify-content: center;
+    width: 64px;
 }
 
 .white {
@@ -48,6 +48,13 @@ ol, ul {
 
 .blue {
     background: #65bed0
+}
+
+.piece {
+    height: auto;
+    width: auto;
+    max-height: 64px;
+    max-width: 64px;
 }
 
 .square:focus {

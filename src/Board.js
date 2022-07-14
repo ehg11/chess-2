@@ -13,6 +13,7 @@ export default function Board() {
 
     let moveFrom = false;
     let selected_position = "";
+    let possible_positions = [];
 
     // all possible letters/columns in a chess board
     const col_letters = "abcdefgh"
@@ -37,8 +38,26 @@ export default function Board() {
         return piece;
     }
 
+    function getColorAt(position) {
+        let color = "";
+        if (findPieceAt(position) === "") {
+            return color;
+        }
+        for (let i = 0; i < curr_board_state.length; i++) {
+            if (curr_board_state[i].position === position) {
+                color = curr_board_state[i].isWhite ? "white" : "black";
+                return color;
+            }
+        }
+    }
+
     function movePieceFrom(old_pos, new_pos) {
-        console.log(`moving piece from ${old_pos} to ${new_pos}`);
+        console.log(` attempting to move piece from ${old_pos} to ${new_pos}`);
+        console.log("possible positions: " + possible_positions);
+        if (!possible_positions.includes(new_pos)) {
+            console.log("position is invalid, trying again");
+            return false;
+        }
         for (let i = 0; i < curr_board_state.length; i++) {
             if (curr_board_state[i].position === old_pos) {
                 curr_board_state[i].position = new_pos;
@@ -47,20 +66,50 @@ export default function Board() {
             }
         }
         console.log(curr_board_state);
+        return true;
+    }
+
+    function possiblePositions(piece, position) {
+        let poss_pos = [];
+        let row = parseInt(position[1]);
+        let possible = position[0] + ++row;
+        poss_pos.push(possible);
+        return poss_pos;
     }
 
     function click(position) {
-        console.log("Clicking " + position);
         if (!moveFrom) {
             console.log("selecting " + position);
+            let piece = findPieceAt(position);
+            if (piece === "") {
+                console.log("selected empty");
+                return;
+            }
+            console.log(`selected ${piece}`);
+            possible_positions = possiblePositions("pawn", position);
+            console.log("possible positions: " + possible_positions);
             selected_position = position;
         }
         else {
             console.log("deselecting at " + position);
-            movePieceFrom(selected_position, position);
+            let moved = movePieceFrom(selected_position, position);
+            if (!moved) {
+                return;
+            }
             selected_position = "";
         }
         moveFrom = !moveFrom;
+    }
+
+    function getPNGAt(position) {
+        let path = "./assets/";
+        let piece = findPieceAt(position);
+        if (piece === "") {
+            return "";
+        }
+        let color = getColorAt(position);
+        path += piece + "_" + color + ".png";
+        return path;
     }
 
     function renderRow(rowNum, board) {
@@ -69,7 +118,9 @@ export default function Board() {
                 key={key}
                 position={id}
                 piece={findPieceAt(id)}
+                color={getColorAt(id)}
                 onClick={() => click(id)}
+                img={getPNGAt(id)}
             />
         );
         return rowCells;

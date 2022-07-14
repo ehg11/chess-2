@@ -192,3 +192,10 @@ export var init_board_state = [
         alive: true,
     },
 ]
+
+export function getPath(piece, color) {
+    if (!piece) {
+        return "";
+    }
+    return require("./assets/" + piece + "_" + color + ".png")
+}

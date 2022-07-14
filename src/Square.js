@@ -1,6 +1,7 @@
 import "./index.css"
 
 import React from "react"
+import { getPath } from "./utils.js"
 
 export default function Square(props) {
 
@@ -13,17 +14,19 @@ export default function Square(props) {
     }
 
     if( isBlue() ) {
+        console.log(props.img);
         return (
             <button className="square blue" onClick={ props.onClick }>
-                {props.piece}
+                <img className="piece" src={ getPath(props.piece, props.color) } alt={ props.piece }/>
             </button>
         )
     }
     else {
         return (
             <button className="square white" onClick={ props.onClick }>
-                {props.piece}
+                <img className="piece" src={ getPath(props.piece, props.color) } alt={ props.piece }/>
             </button>
         )
     }
 }
+
