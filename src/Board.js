@@ -66,12 +66,57 @@ export default function Board() {
         return true;
     }
 
+    const alphaVal = (s) => s.toLowerCase().charCodeAt(0) - 96;
+
+    function parsePos(position) {
+        return [position[0], parseInt(position[1])];
+    }
+
+    function isValidPos(position) {
+        let [col, row] = parsePos(position);
+        col = alphaVal(col);
+        if (col < 1 || col > 8) {
+            return false;
+        }
+        if (row < 1 || row > 8) {
+            return false;
+        }
+        return true;
+    }
+
+    function addIfValid(set, position) {
+        if (isValidPos(position)) {
+            set.add(position);
+            return true;
+        }
+        return false;
+    }
+
     function possiblePositions(piece, position) {
-        let poss_pos = [];
-        let row = parseInt(position[1]);
-        let possible = position[0] + ++row;
-        poss_pos.push(possible);
-        return poss_pos;
+        let poss_pos = new Set();
+        let [col, row] = parsePos(position);
+        let colNum = alphaVal(col);
+        let step;
+        switch (piece) {
+            case "pawn":
+                let color = getColorAt(position);
+                step = color === "white" ? 1 : -1;
+                addIfValid(poss_pos, col + (row + step));
+                if (color === "white") {
+                    if (row === 2) {
+                        step *= 2;
+                        addIfValid(poss_pos, col + (row + step));
+                    }
+                }
+                if (color === "black") {
+                    if (row === 7) {
+                        step *= 2;
+                        addIfValid(poss_pos, col + (row + step));
+                    }
+                }
+                break;
+        }
+        return Array.from(poss_pos);
     }
 
     function resetBoard() {
@@ -88,7 +133,7 @@ export default function Board() {
                 return;
             }
             console.log(`selected ${piece}`);
-            possible_positions = possiblePositions("pawn", position);
+            possible_positions = possiblePositions(piece, position);
             console.log("possible positions: " + possible_positions);
             selected_position = position;
             setBoard(renderBoard());
