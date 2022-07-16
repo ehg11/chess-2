@@ -13,7 +13,7 @@
     - The monkey lands on a piece of the opposite color, thereby taking the piece.
     - The player decides to stop the monkey.
 - In any of the above three cases, the player's turn will end. The monkey cannot perform a default move after jumping. 
-- Additional Functionality: See [The Banana Catch](###the-banana-catch)
+- Additional Functionality: See [The Banana Catch](##win-condition)
 
 ### Elephant
 - Moves exactly two diagonal spaces in any of the 4 diagonal directions. 
