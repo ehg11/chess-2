@@ -13,7 +13,7 @@
     - The monkey lands on a piece of the opposite color, thereby taking the piece.
     - The player decides to stop the monkey.
 - In any of the above three cases, the player's turn will end. The monkey cannot perform a default move after jumping. 
-- Additional Functionality: See [The Banana Catch](##win-condition)
+- Additional Functionality: See [The Banana Catch](#the-banana-catch)
 
 ### Elephant
 - Moves exactly two diagonal spaces in any of the 4 diagonal directions. 
@@ -27,7 +27,7 @@
 
 ### King
 - The king behaves exactly how it does in normal chess.
-- The king begins the game with a banana. See [The Banana Catch](###the-banana-catch)
+- The king begins the game with a banana. See [The Banana Catch](#the-banana-catch)
 - When the king is taken, the game is **NOT** over. Instead, the king is captured
 
 ### Queen
