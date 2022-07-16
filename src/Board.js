@@ -28,7 +28,7 @@ export default function Board() {
         boardArray.push(row);
     }
 
-    function findPieceAt(position) {
+    function getPieceAt(position) {
         let piece = "";
         for (let i = 0; i < curr_board_state.length; i++) {
             if (curr_board_state[i].position === position) {
@@ -40,7 +40,7 @@ export default function Board() {
 
     function getColorAt(position) {
         let color = "";
-        if (findPieceAt(position) === "") {
+        if (getPieceAt(position) === "") {
             return color;
         }
         for (let i = 0; i < curr_board_state.length; i++) {
@@ -72,9 +72,23 @@ export default function Board() {
         return [position[0], parseInt(position[1])];
     }
 
-    function isValidPos(position) {
-        let [col, row] = parsePos(position);
-        col = alphaVal(col);
+    function isValidPos(from, dest) {
+        let src_color = getColorAt(from);
+        if (getPieceAt(dest) !== "" && getColorAt(dest) === src_color) {
+            return false;
+        }
+        return true;
+    }
+
+    function addIfValid(from, dest, set) {
+        if (isValidPos(from, dest)) {
+            set.add(dest);
+            return true;
+        }
+        return false;
+    }
+
+    function inBoard(col, row) {
         if (col < 1 || col > 8) {
             return false;
         }
@@ -84,37 +98,80 @@ export default function Board() {
         return true;
     }
 
-    function addIfValid(set, position) {
-        if (isValidPos(position)) {
-            set.add(position);
-            return true;
+    function addIfInBoard(col, row, array) {
+        if (!inBoard(col, row)) {
+            return false;
         }
-        return false;
+        array.push(col_letters[col - 1] + row);
+        return true;
     }
 
     function possiblePositions(piece, position) {
         let poss_pos = new Set();
+        let dirs = [];
         let [col, row] = parsePos(position);
         let colNum = alphaVal(col);
-        let step;
         switch (piece) {
             case "pawn":
                 let color = getColorAt(position);
-                step = color === "white" ? 1 : -1;
-                addIfValid(poss_pos, col + (row + step));
-                if (color === "white") {
-                    if (row === 2) {
-                        step *= 2;
-                        addIfValid(poss_pos, col + (row + step));
-                    }
-                }
-                if (color === "black") {
-                    if (row === 7) {
-                        step *= 2;
-                        addIfValid(poss_pos, col + (row + step));
-                    }
-                }
+                let step = color === "white" ? 1 : -1;
+                addIfInBoard(colNum, row + step, dirs);
+                addIfInBoard(colNum + 1, row, dirs);
+                addIfInBoard(colNum + 1, row + step, dirs);
+                addIfInBoard(colNum - 1, row, dirs);
+                addIfInBoard(colNum - 1, row + step, dirs);
                 break;
+            case "bishop":
+                let blocked_dirs = [];
+                let block_pos = "";
+                // ne
+                if (inBoard(colNum + 1, row + 1)) {
+                    block_pos = col_letters[colNum + 1 - 1] + (row + 1);
+                    if (getPieceAt(block_pos) !== "") {
+                        blocked_dirs.push("ne");
+                    }
+                }
+                // se
+                if (inBoard(colNum + 1, row - 1)) {
+                    block_pos = col_letters[colNum + 1 - 1] + (row - 1);
+                    if (getPieceAt(block_pos) !== "") {
+                        blocked_dirs.push("se");
+                    }
+                }
+                // nw
+                if (inBoard(colNum - 1, row + 1)) {
+                    block_pos = col_letters[colNum - 1 - 1] + (row + 1);
+                    if (getPieceAt(block_pos) !== "") {
+                        blocked_dirs.push("nw");
+                    }
+                }
+                // sw
+                if (inBoard(colNum - 1, row - 1)) {
+                    block_pos = col_letters[colNum - 1 - 1] + (row - 1);
+                    if (getPieceAt(block_pos) !== "") {
+                        blocked_dirs.push("sw");
+                    }
+                }
+                // ne
+                if (!blocked_dirs.includes("ne")) {
+                    addIfInBoard(colNum + 2, row + 2, dirs);
+                }
+                // se
+                if (!blocked_dirs.includes("se")) {
+                    addIfInBoard(colNum + 2, row - 2, dirs);
+                }
+                // nw
+                if (!blocked_dirs.includes("nw")) {
+                    addIfInBoard(colNum - 2, row + 2, dirs);
+                }
+                // sw
+                if (!blocked_dirs.includes("sw")) {
+                    addIfInBoard(colNum - 2, row - 2, dirs);
+                }
+                
+        }
+        for (let i = 0; i < dirs.length; i++) {
+            addIfValid(position, dirs[i], poss_pos);
         }
         return Array.from(poss_pos);
     }
@@ -128,7 +185,7 @@ export default function Board() {
     function click(position) {
         // selecting a piece
         if (!moveFrom) {
-            let piece = findPieceAt(position);
+            let piece = getPieceAt(position);
             if (piece === "") {
                 return;
             }
@@ -153,7 +210,7 @@ export default function Board() {
 
     function getPNGAt(position) {
         let path = "./assets/";
-        let piece = findPieceAt(position);
+        let piece = getPieceAt(position);
         if (piece === "") {
             return "";
         }
@@ -167,7 +224,7 @@ export default function Board() {
             <Square
                 key={key}
                 position={id}
-                piece={findPieceAt(id)}
+                piece={getPieceAt(id)}
                 color={getColorAt(id)}
                 onClick={() => click(id)}
                 img={getPNGAt(id)}
