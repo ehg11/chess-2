@@ -41,7 +41,7 @@ body {
 }
 
 .selected {
-    filter: brightness(80%);
+    filter: brightness(95%);
 }
 
 .piece {
@@ -49,14 +49,27 @@ body {
     width: auto;
     max-height: 64px;
     max-width: 64px;
+    z-index: 10 !important;
 }
 
 .available {
+    position: absolute;
     height: 16px;
     width: 16px;
     border-radius: 50%;
     background: #909090;
-    opacity: 0.75;
+    opacity: 0.90;
+    z-index: 99 !important;
+}
+
+.target {
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #db0000;
+    opacity: 0.90;
+    z-index: 99 !important;
 }
 
 .num-label {
