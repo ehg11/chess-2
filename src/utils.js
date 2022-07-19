@@ -87,13 +87,13 @@ export var init_board_state = [
         type: "queen",
         position: "d1",
         isWhite: true,
-        alive: true,
+        jailed: false,
     },
     {
-        type: "king",
+        type: "king_banana",
         position: "e1",
         isWhite: true,
-        alive: true,
+        jailed: false,
     },
     {
         type: "pawn",
@@ -183,13 +183,13 @@ export var init_board_state = [
         type: "queen",
         position: "d8",
         isWhite: false,
-        alive: true,
+        jailed: false,
     },
     {
-        type: "king",
+        type: "king_banana",
         position: "e8",
         isWhite: false,
-        alive: true,
+        jailed: false,
     },
 ]
 

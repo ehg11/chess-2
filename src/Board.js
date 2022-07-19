@@ -17,16 +17,14 @@ export default function Board() {
         bishop: 0,
         knight: 0,
         rook: 0,
-        queen: 0,
-        king: 0,
+        fish_queen: 0,
     }
     let killed_black_dict = {
         pawn: 0,
         bishop: 0,
         knight: 0,
         rook: 0,
-        queen: 0,
-        king: 0,
+        fish_queen: 0,
     }
 
     // movement globals
@@ -104,11 +102,8 @@ export default function Board() {
             case "rook":
                 dict.rook++;
                 break;
-            case "queen":
-                dict.queen++;
-                break;
-            case "king":
-                dict.king++;
+            case "fish_queen":
+                dict.fish_queen++;
                 break;
             default:
                 break;
@@ -182,6 +177,28 @@ export default function Board() {
             else {
                 console.log("setting monkey_jump to false");
                 monkey_jump = false;
+            }
+        }
+
+        // special check for fishy queen
+        if (getPieceAt(new_pos) === "pawn") {
+            // for white -- reach 8th rank
+            if (getColorAt(new_pos) === "white" && new_pos[1] === "8") {
+                for (let i = 0; i < curr_board_state.length; i++) {
+                    if (curr_board_state[i].position === new_pos) {
+                        curr_board_state[i].type = "fish_queen"
+                        break;
+                    }
+                }
+            } 
+            // for black -- reach 1st rank
+            if (getColorAt(new_pos) === "black" && new_pos[1] === "1") {
+                for (let i = 0; i < curr_board_state.length; i++) {
+                    if (curr_board_state[i].position === new_pos) {
+                        curr_board_state[i].type = "fish_queen"
+                        break;
+                    }
+                }
             }
         }
         if (rook_enabled !== killed) {
@@ -497,6 +514,7 @@ export default function Board() {
                 }
                 break;
             case "queen":
+            case "fish_queen":
                 // in each direction, keep going until the edge of the board
                 // n
                 for (let i = 1; addIfInBoard(colNum, row + i, dirs); i++) {
