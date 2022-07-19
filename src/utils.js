@@ -197,7 +197,10 @@ export function getPath(piece, color) {
     if (!piece) {
         return "";
     }
-    return require("./assets/" + piece + "_" + color + ".png")
+    if (piece === "bear") {
+        return require("./assets/" + piece + ".png");
+    }
+    return require("./assets/" + piece + "_" + color + ".png");
 }
 
 export function removeElement(arr, value) {

@@ -3,13 +3,31 @@ import "./index.css"
 import React, { useState } from "react";
 import Square from "./Square.js"
 
-import { init_board_state, removeElement } from "./utils.js"
+import { init_board_state, getPath, removeElement } from "./utils.js"
 
 export default function Board() {
 
     // 2D Array to Be Interpreted as a Board
     let boardArray = [];
-    let curr_board_state = JSON.parse(JSON.stringify(init_board_state))
+    let curr_board_state = JSON.parse(JSON.stringify(init_board_state));
+
+    // killed pieces
+    let killed_white_dict = {
+        pawn: 0,
+        bishop: 0,
+        knight: 0,
+        rook: 0,
+        queen: 0,
+        king: 0,
+    }
+    let killed_black_dict = {
+        pawn: 0,
+        bishop: 0,
+        knight: 0,
+        rook: 0,
+        queen: 0,
+        king: 0,
+    }
 
     // movement globals
     let moveFrom = false;
@@ -72,6 +90,31 @@ export default function Board() {
         }
     }
 
+    async function incrementKilled(piece, dict) {
+        switch (piece) {
+            case "pawn":
+                dict.pawn++;
+                break;
+            case "bishop":
+                dict.bishop++;
+                break;
+            case "knight":
+                dict.knight++;
+                break;
+            case "rook":
+                dict.rook++;
+                break;
+            case "queen":
+                dict.queen++;
+                break;
+            case "king":
+                dict.king++;
+                break;
+            default:
+                break;
+        }
+    }
+
     function movePieceFrom(old_pos, new_pos) {
         // console.log(`attempting to move piece from ${old_pos} to ${new_pos}`);
         if (!(possible_positions.includes(new_pos) || targets_at.includes(new_pos))) {
@@ -83,8 +126,21 @@ export default function Board() {
         if (targets_at.includes(new_pos)) {
             for (let i = 0; i < curr_board_state.length; i++) {
                 if (curr_board_state[i].position === new_pos) {
+                    // save the piece and color for documenting
+                    let piece = curr_board_state[i].type;
+                    let color = getColorAt(new_pos);
+                    console.log(`killed piece is a ${color} ${piece}`);
                     curr_board_state[i].position = "";
                     curr_board_state[i].alive = false;
+                    // modify the right tracking dictionaries
+                    if (color === "white") {
+                        incrementKilled(piece, killed_white_dict).then(set_killed_white(renderKilled("white")));
+                        console.log(killed_white_dict);
+                    }
+                    if (color === "black") {
+                        incrementKilled(piece, killed_black_dict).then(set_killed_black(renderKilled("black")));
+                        console.log(killed_black_dict);
+                    }
                     killed = true;
                     break;
                 }
@@ -623,10 +679,68 @@ export default function Board() {
         return rowCells;
     }
 
+    function renderKilled(color) {
+        const killed = [];
+        const killed_dict = color === "white" ? killed_white_dict : killed_black_dict;
+        for (const [piece, num_killed] of Object.entries(killed_dict)) {
+            killed.push(
+                <div className="row killed" key={piece}>
+                    <img className="killed-piece" src={getPath(piece, color)} alt={piece}/>
+                    <div>{`+ ${num_killed}`}</div>
+                </div>
+            )
+        }
+        return killed;
+    }
+
+    // function renderBoard() {
+    //     let alpha_letters = "ABCDEF";
+    //     alpha_letters = [...alpha_letters];
+    //     let alpha_labels = alpha_letters.map((letter) =>
+    //         <div className="alpha-label">{letter}</div>
+    //     );
+    //     let board_rows = [];
+    //     for (let row_num = 8; row_num > 0; row_num++) {
+    //         if (row_num === 4 || row_num === 5) {
+    //             board_rows.push(
+    //                 <div className="board-row">
+    //                     <Square
+    //                         position={`z + ${row_num}`}
+    //                     />
+    //                     <div className="num-label">{row_num}</div>
+    //                     {renderRow(9 - row_num, boardArray)}
+    //                     <div className="num-label">{row_num}</div>
+    //                     <Square
+    //                         position={`i + ${row_num}`}
+    //                     />
+    //                 </div>
+    //             )
+    //         }
+    //         board_rows.push(
+    //             <div className="board-row">
+    //                 <div className="num-label">{row_num}</div>
+    //                 {renderRow(9 - row_num, boardArray)}
+    //                 <div className="num-label">{row_num}</div>
+    //             </div>
+    //         )
+    //     }
+    //     return (
+    //         <div className="board">
+    //             <div className="alpha_row">
+    //                 {alpha_labels}
+    //             </div>
+    //             {board_rows}
+    //             <div className="alpha_row">
+    //                 {alpha_labels}
+    //             </div>
+    //         </div>
+    //     )
+    // }
+
     function renderBoard() {
         return (
             <div className="board">
-                <div className="alpha-row">
+                <div className="row">
                     <div className="alpha-label">A</div>
                     <div className="alpha-label">B</div>
                     <div className="alpha-label">C</div>
@@ -688,7 +802,7 @@ export default function Board() {
                     {renderRow(8, boardArray)}
                     <div className="num-label"> 1 </div>
                 </div>
-                <div className="alpha-row">
+                <div className="row">
                     <div className="alpha-label">A</div>
                     <div className="alpha-label">B</div>
                     <div className="alpha-label">C</div>
@@ -703,10 +817,19 @@ export default function Board() {
     }
 
     const [full_board, setBoard] = useState(renderBoard());
+    const [killed_white, set_killed_white] = useState(renderKilled("white"));
+    const [killed_black, set_killed_black] = useState(renderKilled("black"));
 
     return (
         <div>
+            <div className="board-row row">
+                {killed_white}
+            </div>
             { full_board }
+            <div className="board-row row">
+                {killed_black}
+            </div>
+            <div className="white-space" />
             <div className="board-row">
                 <button onClick={() => resetBoard()}>
                     RESET

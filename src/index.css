@@ -4,7 +4,7 @@ body {
 }
 
 .board {
-    margin: 50px;
+    margin: 0px 50px;
 }
 
 .board-row {
@@ -52,6 +52,17 @@ body {
     z-index: 10 !important;
 }
 
+.killed-piece {
+    height: auto;
+    width: auto;
+    max-height: 32px;
+    max-width: 32px;
+}
+
+.killed {
+    margin: 0px 10px;
+}
+
 .available {
     position: absolute;
     height: 16px;
@@ -77,15 +88,20 @@ body {
     margin: 10px;
 }
 
-.alpha-row {
+.row {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     width: auto;
 
 }
 
 .alpha-label {
     padding: 16px 26.5px 16px;
+}
+
+.white-space {
+    margin: 32px;
 }
 
