@@ -4,6 +4,7 @@
 ### Rook
 - Can move anywhere
 - If the opponent took a piece in the previous turn, can take a piece in any of the four main directions (not diagonal)
+- Note: capturing the king or queen does not enable the rook to take a piece. See [Win Condition](#win-condition)
 
 ### Monkey
 - Can move to any of the 8 available adjacent squares (includes diagonals). If the space is occupied, it cannot move there. 
@@ -49,4 +50,4 @@
         - The king is holding a banana.
     - If the above three conditions are satisfied, the **Banana Catch** can be performed. The monkey may jump into the jail and rescue the king. The king is left on the space the monkey rescued him from (adjacent to the jail) and the monkey MUST continue jumping to an available position. 
     - The rescued king then loses his banana. If a king loses his banana, he can no longer be rescued.
-- The game is only over once both the king and queen are captured. This is the case even if the king has his banana. The fishy queen cannot be captured. The victor is the player who successfully captured both the opposing king and queen.  
+- The game is only over once both the king and queen are captured. This is the case even if the king has his banana. The fishy queen cannot be captured. The victor is the player who successfully captured both the opposing king and queen.P  

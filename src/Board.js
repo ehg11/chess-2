@@ -9,6 +9,7 @@ export default function Board() {
 
     // 2D Array to Be Interpreted as a Board
     let boardArray = [];
+    let jail_squares = ["i4", "z4", "i5", "z5"];
     let curr_board_state = JSON.parse(JSON.stringify(init_board_state));
 
     // killed pieces
@@ -26,9 +27,11 @@ export default function Board() {
         rook: 0,
         fish_queen: 0,
     }
+    let captured_piece = "";
 
     // movement globals
     let moveFrom = false;
+    let move_captured_piece = false;
     let selected_position = "";
     let possible_positions = [];
     let targets_at = [];
@@ -124,6 +127,13 @@ export default function Board() {
                     // save the piece and color for documenting
                     let piece = curr_board_state[i].type;
                     let color = getColorAt(new_pos);
+                    if (piece === "king" || piece === "king_banana" || piece === "queen") {
+                        curr_board_state[i].position = "";
+                        curr_board_state[i].jailed = true;
+                        captured_piece = `${piece} ${color}`;
+                        console.log(`captured ${captured_piece}`);
+                        break;
+                    }
                     console.log(`killed piece is a ${color} ${piece}`);
                     curr_board_state[i].position = "";
                     curr_board_state[i].alive = false;
@@ -148,7 +158,7 @@ export default function Board() {
             }
         }
         // special check for monkey if monkey jumped
-        if (getPieceAt(new_pos) === "knight") {
+        if (getPieceAt(new_pos) === "knight" && !killed) {
             let [col, row] = pos2index(old_pos);
             let colNum = alphaVal(col);
             let one_away = [];
@@ -179,6 +189,8 @@ export default function Board() {
                 monkey_jump = false;
             }
         }
+
+        console.log(`new piece at ${new_pos} is ${getPieceAt(new_pos)}`);
 
         // special check for fishy queen
         if (getPieceAt(new_pos) === "pawn") {
@@ -640,10 +652,31 @@ export default function Board() {
     }
 
     function click(position) {
+        // if a captured piece needs to be moved, select a jail cell
+        if (move_captured_piece) {
+            if (!possible_positions.includes(position)) {
+                return;
+            }
+            let [piece, color] = captured_piece.split(" ");
+            let isWhite = color === "white";
+            for (let i = 0; i < curr_board_state.length; i++) {
+                if (curr_board_state[i].type === piece && curr_board_state[i].isWhite === isWhite) {
+                    curr_board_state[i].position = position;
+                }
+            }
+            move_captured_piece = false;
+            captured_piece = "";
+            selected_position = "";
+            possible_positions = [];
+            targets_at = [];
+            moveFrom = false;
+            setBoard(renderBoard());
+            return;
+        }
         // selecting a piece
         if (!moveFrom) {
             let piece = getPieceAt(position);
-            if (piece === "") {
+            if (piece === "" || jail_squares.includes(position)) {
                 return;
             }
             // console.log(`selected ${piece}`);
@@ -664,6 +697,22 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             setBoard(renderBoard());
+        }
+        // if a piece was captured, select a spot in the jail
+        if (captured_piece !== "") {
+            let color = captured_piece.split(" ")[1];
+            let file = color === "white" ? "z" : "i";
+            possible_positions = [];
+            if (getPieceAt(file + 4) === "") {
+                possible_positions.push(file + 4);
+            } 
+            if (getPieceAt(file + 5) === "")  {
+                possible_positions.push(file + 5);
+            }
+            console.log(`possible jail slots: ${possible_positions}`);
+            move_captured_piece = true;
+            setBoard(renderBoard());
+            return;
         }
         moveFrom = !moveFrom;
     }
@@ -695,6 +744,22 @@ export default function Board() {
             />
         );
         return rowCells;
+    }
+
+    function renderJail(position) {
+        return (
+            <Square
+                position={position}
+                piece={getPieceAt(position)}
+                color={getColorAt(position)}
+                alive={isLiving(position)}
+                onClick={() => click(position)}
+                img={getPNGAt(position)}
+                selected={selected_position === position}
+                available={possible_positions.includes(position)}
+                target={targets_at.includes(position)}
+            />
+        )
     }
 
     function renderKilled(color) {
@@ -784,26 +849,18 @@ export default function Board() {
                     <div className="num-label"> 6 </div>
                 </div>
                 <div className="board-row">
-                    <Square
-                        position={"z5"}
-                    />
+                    {renderJail("z5")}
                     <div className="num-label"> 5 </div>
                     {renderRow(4, boardArray)}
                     <div className="num-label"> 5 </div>
-                    <Square
-                        position={"i5"}
-                    />
+                    {renderJail("i5")}
                 </div>
                 <div className="board-row">
-                    <Square
-                        position={"z4"}
-                    />
+                    {renderJail("z4")}
                     <div className="num-label"> 4 </div>
                     {renderRow(5, boardArray)}
                     <div className="num-label"> 4 </div>
-                    <Square
-                        position={"i4"}
-                    />
+                    {renderJail("i4")}
                 </div>
                 <div className="board-row">
                     <div className="num-label"> 3 </div>
