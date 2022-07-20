@@ -7,6 +7,9 @@ import { init_board_state, getPath, removeElement } from "./utils.js"
 
 export default function Board() {
 
+    // stateful status message
+    let [status, set_status] = useState("Select a Piece to Move");
+
     // 2D Array to Be Interpreted as a Board
     let boardArray = [];
     let jail_squares = ["i4", "z4", "i5", "z5"];
@@ -654,10 +657,10 @@ export default function Board() {
     function click(position) {
         // if a captured piece needs to be moved, select a jail cell
         if (move_captured_piece) {
+            let [piece, color] = captured_piece.split(" ");
             if (!possible_positions.includes(position)) {
                 return;
             }
-            let [piece, color] = captured_piece.split(" ");
             let isWhite = color === "white";
             for (let i = 0; i < curr_board_state.length; i++) {
                 if (curr_board_state[i].type === piece && curr_board_state[i].isWhite === isWhite) {
@@ -670,6 +673,7 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             moveFrom = false;
+            set_status("Select a Piece to Move");
             setBoard(renderBoard());
             return;
         }
@@ -685,6 +689,7 @@ export default function Board() {
             console.log(`targets at: ${targets_at}`);
             // console.log("possible positions: " + possible_positions);
             selected_position = position;
+            set_status("Select a Position to Move To")
             setBoard(renderBoard());
         }
         // placing a piece
@@ -697,22 +702,26 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             setBoard(renderBoard());
-        }
-        // if a piece was captured, select a spot in the jail
-        if (captured_piece !== "") {
-            let color = captured_piece.split(" ")[1];
-            let file = color === "white" ? "z" : "i";
-            possible_positions = [];
-            if (getPieceAt(file + 4) === "") {
-                possible_positions.push(file + 4);
-            } 
-            if (getPieceAt(file + 5) === "")  {
-                possible_positions.push(file + 5);
+            // if a piece was captured, select a spot in the jail
+            if (captured_piece !== "") {
+                let color = captured_piece.split(" ")[1];
+                let file = color === "white" ? "z" : "i";
+                possible_positions = [];
+                if (getPieceAt(file + 4) === "") {
+                    possible_positions.push(file + 4);
+                } 
+                if (getPieceAt(file + 5) === "")  {
+                    possible_positions.push(file + 5);
+                }
+                console.log(`possible jail slots: ${possible_positions}`);
+                move_captured_piece = true;
+                setBoard(renderBoard());
+                set_status(`Move the Captured ${captured_piece.split(" ")[0]} to a Jail Cell`);
+                return;
             }
-            console.log(`possible jail slots: ${possible_positions}`);
-            move_captured_piece = true;
-            setBoard(renderBoard());
-            return;
+            else {
+                set_status("Select a Piece to Move");
+            }
         }
         moveFrom = !moveFrom;
     }
@@ -904,7 +913,9 @@ export default function Board() {
             <div className="board-row row">
                 {killed_black}
             </div>
-            <div className="white-space" />
+            <div className="board-row status-message">
+                {status}
+            </div>
             <div className="board-row">
                 <button onClick={() => resetBoard()}>
                     RESET

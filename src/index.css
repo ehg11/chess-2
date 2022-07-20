@@ -101,6 +101,12 @@ body {
     padding: 16px 26.5px 16px;
 }
 
+.status-message {
+    margin: 32px;
+    font-weight: bold;
+    font-size: 24px;
+}
+
 .white-space {
     margin: 32px;
 }
