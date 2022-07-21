@@ -35,9 +35,12 @@ export default function Board() {
     // movement globals
     let moveFrom = false;
     let move_captured_piece = false;
+    let banana_catch = false;
     let selected_position = "";
     let possible_positions = [];
     let targets_at = [];
+    let post_catch_spots = [];
+    let post_catch_targets = [];
 
     // trackers for special features
     let monkey_jump = false;
@@ -267,6 +270,46 @@ export default function Board() {
         return true;
     }
 
+    function canDoBananaCatch(color) {
+        let jail_adj = color === "white" ? ["a4","a5"] : ["h4","h5"];
+        let jail_file = color === "white" ? "z" : "i";
+        for (let i = 0; i < jail_adj.length; i++) {
+            // find the monkey's position
+            if (getPieceAt(jail_adj[i]) === "knight" && getColorAt(jail_adj[i]) === color) {
+                // if the monkey's position is found, check if the king (w/ banana) is in a captured square
+                let monkey_pos = jail_adj[i];
+                let monkey_rank = monkey_pos[1];
+                let pos = jail_file + monkey_rank;
+                if (getPieceAt(pos) === "king_banana" && getColorAt(pos) === color) {
+                    // if the king is there, check if the monkey can swing out
+                    let [col, row] = pos2index(monkey_pos);
+                    let colNum = alphaVal(col);
+                    for (let i = -1; i < 2; i++) {
+                        for (let j = -1; j < 2; j++) {
+                            // make sure the spot is in the board first
+                            if (!inBoard(colNum + i, row + j) || !inBoard(colNum + (2 * i), row + (2 * j))) {
+                                continue;
+                            }
+                            let adj_pos = index2pos(colNum + i, row + j);
+                            // if there is a piece 
+                            if (getPieceAt(adj_pos) !== "") {
+                                // check for a spot beyond it
+                                let jump_pos = index2pos(colNum + (2 * i), row + (2 * j));
+                                if (getColorAt(jump_pos) === "") {
+                                    post_catch_spots.push(jump_pos);
+                                }
+                                else if (getColorAt(jump_pos) !== color) {
+                                    post_catch_targets.push(jump_pos);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return post_catch_spots.length + post_catch_targets.length > 0;
+    }
+
     function possiblePositions(piece, position) {
         let poss_pos = new Set();
         let targets = [];
@@ -274,15 +317,6 @@ export default function Board() {
         let dirs = [];
         let [col, row] = pos2index(position);
         let colNum = alphaVal(col);
-        // if in dev mode, all positions are possible
-        // if (dev) {
-        //     for (let i = 0; i < boardArray.length; i++) {
-        //         for (let j = 0; j < boardArray[i].length; j++) {
-        //             poss_pos.add(boardArray[i][j]);
-        //         }
-        //     }
-        //     return Array.from(poss_pos);
-        // }
         switch (piece) {
             case "pawn":
                 let step = color === "white" ? 1 : -1;
@@ -366,6 +400,9 @@ export default function Board() {
                 }
                 break;
             case "knight":
+                if (canDoBananaCatch(color)) {
+                    console.log("can do banana catch");
+                }
                 // if not jumped, can move in any direction
                 // cannot take pieces
                 // n
