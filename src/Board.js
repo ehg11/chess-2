@@ -125,6 +125,29 @@ export default function Board() {
             // console.log("position is invalid, trying again");
             return false;
         }
+        // check for banana catch
+        if (getPieceAt(old_pos) === "knight" && getPieceAt(new_pos) === "king_banana") {
+            if (getColorAt(old_pos) === getColorAt(new_pos)) {
+                // move king to old pos, remove banana
+                // save monkey index to set it's new pos
+                let index;
+                for (index = 0; index < curr_board_state.length; index++) {
+                    if (curr_board_state[index].position === old_pos) {
+                        break;
+                    }
+                }
+                for (let i = 0; i < curr_board_state.length; i++) {
+                    if (curr_board_state[i].position === new_pos) {
+                        curr_board_state[i].type = "king";
+                        curr_board_state[i].position = old_pos;
+                        curr_board_state[i].jailed = false;
+                    }
+                }
+                curr_board_state[index].position = new_pos;
+                banana_catch = true;
+                return true;
+            }
+        }
         let killed = false;
         // if piece was taken, change position to "", set alive to false (used for tracking)
         if (targets_at.includes(new_pos)) {
@@ -400,8 +423,12 @@ export default function Board() {
                 }
                 break;
             case "knight":
+                set_status("monkey selected");
                 if (canDoBananaCatch(color)) {
                     console.log("can do banana catch");
+                    let king_col = color === "white" ? "z" : "i";
+                    let king_pos = king_col + row;
+                    poss_pos.add(king_pos);
                 }
                 // if not jumped, can move in any direction
                 // cannot take pieces
@@ -714,6 +741,32 @@ export default function Board() {
             setBoard(renderBoard());
             return;
         }
+        if (banana_catch) {
+            if (!possible_positions.includes(position)) {
+                return;
+            }
+            // get the monkey's position
+            let monkey_pos;
+            for (let i = 0; i < jail_squares.length; i++) {
+                if (getPieceAt(jail_squares[i]) === "knight") {
+                    monkey_pos = jail_squares[i]
+                }
+            }
+            // modify curr_board_state
+            for (let i = 0; i < curr_board_state.length; i++) {
+                if (curr_board_state[i].position === monkey_pos) {
+                    curr_board_state[i].position = position;
+                }
+            }
+            banana_catch = false;
+            selected_position = "";
+            possible_positions = [];
+            targets_at = [];
+            moveFrom = false;
+            set_status("Select a Piece to Move");
+            setBoard(renderBoard());
+            return;
+        }
         // selecting a piece
         if (!moveFrom) {
             let piece = getPieceAt(position);
@@ -732,6 +785,7 @@ export default function Board() {
         // placing a piece
         else {
             let moved = movePieceFrom(selected_position, position);
+            console.log(curr_board_state);
             if (!moved) {
                 // return;
             }
@@ -754,6 +808,16 @@ export default function Board() {
                 move_captured_piece = true;
                 setBoard(renderBoard());
                 set_status(`Move the Captured ${captured_piece.split(" ")[0]} to a Jail Cell`);
+                return;
+            }
+            // if the banana catch was performed, select a spot for the monkey to land
+            if (banana_catch) {
+                possible_positions = post_catch_spots;
+                targets_at = post_catch_targets;
+                console.log(`possible positions: ${possible_positions}`);
+                console.log(`targets at: ${targets_at}`);
+                setBoard(renderBoard());
+                set_status(`Move the Monkey Back onto the Board`);
                 return;
             }
             else {

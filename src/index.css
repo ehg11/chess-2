@@ -83,6 +83,16 @@ body {
     z-index: 99 !important;
 }
 
+.banana-catch {
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #e7d300;
+    opacity: 0.90;
+    z-index: 99 !important;
+}
+
 .num-label {
     padding: 10px;
     margin: 10px;
