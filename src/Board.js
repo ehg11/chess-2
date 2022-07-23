@@ -7,8 +7,9 @@ import { init_board_state, getPath, removeElement } from "./utils.js"
 
 export default function Board() {
 
-    // stateful status message
+    // stateful variables
     let [status, set_status] = useState("Select a Piece to Move");
+    let [is_white_turn, set_is_white_turn] = useState(true);
 
     // 2D Array to Be Interpreted as a Board
     let boardArray = [];
@@ -1017,6 +1018,13 @@ export default function Board() {
             <div className="board-row status-message">
                 {status}
             </div>
+            {
+                <div className="row">
+                    <div className="white-turn">
+                        Is White's Turn
+                    </div>
+                </div>
+            }
             <div className="board-row">
                 <button onClick={() => resetBoard()}>
                     RESET
