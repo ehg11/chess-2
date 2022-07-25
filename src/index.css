@@ -124,8 +124,19 @@ body {
     font-size: 24px;
     font-weight: bold;
     border-radius: 1000px;
-    background-color: black;
-    color: white;
+    background-color: rgb(232, 232, 232);
+    color: rgb(0, 0, 0);
+}
+
+.black-turn {
+    display: inline-flex;
+    margin: 24px;
+    padding: 4px 16px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 1000px;
+    background-color: rgb(68, 68, 68);
+    color: rgb(255, 255, 255);
 }
 
 .white-space {

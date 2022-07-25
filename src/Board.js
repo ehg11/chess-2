@@ -1,6 +1,6 @@
 import "./index.css"
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Square from "./Square.js"
 
 import { init_board_state, getPath, removeElement } from "./utils.js"
@@ -10,6 +10,8 @@ export default function Board() {
     // stateful variables
     let [status, set_status] = useState("Select a Piece to Move");
     let [is_white_turn, set_is_white_turn] = useState(true);
+    // not stateful, but used to modify stateful (because async (???) idrk)
+    let white_turn = true;
 
     // 2D Array to Be Interpreted as a Board
     let boardArray = [];
@@ -45,10 +47,15 @@ export default function Board() {
 
     // trackers for special features
     let monkey_jump = false;
+    let jumped_pos = [];
     let rook_enabled = false;
 
     // all possible letters/columns in a chess board
     const col_letters = "abcdefgh"
+
+    useEffect(() => {
+        console.log(is_white_turn.toString());
+    }, [is_white_turn])
 
     // for each number, add a number to it, put into array
     for (let rowNum = 8; rowNum > 0; rowNum--) {
@@ -120,6 +127,15 @@ export default function Board() {
         }
     }
 
+    async function changeTurn() {
+        white_turn = !white_turn;
+    }
+
+    function startNextTurn() {
+        changeTurn().then(set_is_white_turn(white_turn));
+        set_status("Select a Piece to Move");
+    }
+
     function movePieceFrom(old_pos, new_pos) {
         // console.log(`attempting to move piece from ${old_pos} to ${new_pos}`);
         if (!(possible_positions.includes(new_pos) || targets_at.includes(new_pos))) {
@@ -161,20 +177,16 @@ export default function Board() {
                         curr_board_state[i].position = "";
                         curr_board_state[i].jailed = true;
                         captured_piece = `${piece} ${color}`;
-                        console.log(`captured ${captured_piece}`);
                         break;
                     }
-                    console.log(`killed piece is a ${color} ${piece}`);
                     curr_board_state[i].position = "";
                     curr_board_state[i].alive = false;
                     // modify the right tracking dictionaries
                     if (color === "white") {
                         incrementKilled(piece, killed_white_dict).then(set_killed_white(renderKilled("white")));
-                        console.log(killed_white_dict);
                     }
                     if (color === "black") {
                         incrementKilled(piece, killed_black_dict).then(set_killed_black(renderKilled("black")));
-                        console.log(killed_black_dict);
                     }
                     killed = true;
                     break;
@@ -211,16 +223,12 @@ export default function Board() {
             // stand still
             addIfInBoard(colNum, row, one_away);
             if (!one_away.includes(new_pos)) {
-                console.log("setting monkey_jump to true");
                 monkey_jump = true;
             } 
             else {
-                console.log("setting monkey_jump to false");
                 monkey_jump = false;
             }
         }
-
-        console.log(`new piece at ${new_pos} is ${getPieceAt(new_pos)}`);
 
         // special check for fishy queen
         if (getPieceAt(new_pos) === "pawn") {
@@ -242,9 +250,6 @@ export default function Board() {
                     }
                 }
             }
-        }
-        if (rook_enabled !== killed) {
-            console.log(`${killed ? "enabling rook" : "disabling rook"}`);
         }
         rook_enabled = killed;
         return true;
@@ -424,9 +429,7 @@ export default function Board() {
                 }
                 break;
             case "knight":
-                set_status("monkey selected");
                 if (canDoBananaCatch(color)) {
-                    console.log("can do banana catch");
                     let king_col = color === "white" ? "z" : "i";
                     let king_pos = king_col + row;
                     poss_pos.add(king_pos);
@@ -529,6 +532,7 @@ export default function Board() {
                 // if jumped, add option to stay still
                 if (monkey_jump) {
                     dirs.push(position);
+                    jumped_pos.forEach((i) => removeElement(dirs, i));
                 }
                 break;
             case "rook":
@@ -738,7 +742,7 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             moveFrom = false;
-            set_status("Select a Piece to Move");
+            startNextTurn();
             setBoard(renderBoard());
             return;
         }
@@ -764,7 +768,7 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             moveFrom = false;
-            set_status("Select a Piece to Move");
+            startNextTurn();
             setBoard(renderBoard());
             return;
         }
@@ -774,10 +778,14 @@ export default function Board() {
             if (piece === "" || jail_squares.includes(position)) {
                 return;
             }
+            let is_white = getColorAt(position) === "white";
+            if (is_white !== white_turn) {
+                return;
+            }
             // console.log(`selected ${piece}`);
             [possible_positions, targets_at] = possiblePositions(piece, position);
-            console.log(`possible positions: ${possible_positions}`);
-            console.log(`targets at: ${targets_at}`);
+            // console.log(`possible positions: ${possible_positions}`);
+            // console.log(`targets at: ${targets_at}`);
             // console.log("possible positions: " + possible_positions);
             selected_position = position;
             set_status("Select a Position to Move To")
@@ -786,9 +794,16 @@ export default function Board() {
         // placing a piece
         else {
             let moved = movePieceFrom(selected_position, position);
-            console.log(curr_board_state);
             if (!moved) {
-                // return;
+                return;
+            }
+            // if the monkey jumped, let them move again
+            if (monkey_jump) {
+                jumped_pos.push(selected_position);
+                selected_position = position;
+                [possible_positions, targets_at] = possiblePositions("knight", selected_position);
+                setBoard(renderBoard());
+                return;
             }
             selected_position = "";
             possible_positions = [];
@@ -805,7 +820,6 @@ export default function Board() {
                 if (getPieceAt(file + 5) === "")  {
                     possible_positions.push(file + 5);
                 }
-                console.log(`possible jail slots: ${possible_positions}`);
                 move_captured_piece = true;
                 setBoard(renderBoard());
                 set_status(`Move the Captured ${captured_piece.split(" ")[0]} to a Jail Cell`);
@@ -815,14 +829,14 @@ export default function Board() {
             if (banana_catch) {
                 possible_positions = post_catch_spots;
                 targets_at = post_catch_targets;
-                console.log(`possible positions: ${possible_positions}`);
-                console.log(`targets at: ${targets_at}`);
+                // console.log(`possible positions: ${possible_positions}`);
+                // console.log(`targets at: ${targets_at}`);
                 setBoard(renderBoard());
                 set_status(`Move the Monkey Back onto the Board`);
                 return;
             }
             else {
-                set_status("Select a Piece to Move");
+                startNextTurn();
             }
         }
         moveFrom = !moveFrom;
@@ -886,50 +900,6 @@ export default function Board() {
         }
         return killed;
     }
-
-    // function renderBoard() {
-    //     let alpha_letters = "ABCDEF";
-    //     alpha_letters = [...alpha_letters];
-    //     let alpha_labels = alpha_letters.map((letter) =>
-    //         <div className="alpha-label">{letter}</div>
-    //     );
-    //     let board_rows = [];
-    //     for (let row_num = 8; row_num > 0; row_num++) {
-    //         if (row_num === 4 || row_num === 5) {
-    //             board_rows.push(
-    //                 <div className="board-row">
-    //                     <Square
-    //                         position={`z + ${row_num}`}
-    //                     />
-    //                     <div className="num-label">{row_num}</div>
-    //                     {renderRow(9 - row_num, boardArray)}
-    //                     <div className="num-label">{row_num}</div>
-    //                     <Square
-    //                         position={`i + ${row_num}`}
-    //                     />
-    //                 </div>
-    //             )
-    //         }
-    //         board_rows.push(
-    //             <div className="board-row">
-    //                 <div className="num-label">{row_num}</div>
-    //                 {renderRow(9 - row_num, boardArray)}
-    //                 <div className="num-label">{row_num}</div>
-    //             </div>
-    //         )
-    //     }
-    //     return (
-    //         <div className="board">
-    //             <div className="alpha_row">
-    //                 {alpha_labels}
-    //             </div>
-    //             {board_rows}
-    //             <div className="alpha_row">
-    //                 {alpha_labels}
-    //             </div>
-    //         </div>
-    //     )
-    // }
 
     function renderBoard() {
         return (
@@ -1018,16 +988,24 @@ export default function Board() {
             <div className="board-row status-message">
                 {status}
             </div>
-            {
-                <div className="row">
+            { is_white_turn 
+                ? <div className="row">
                     <div className="white-turn">
                         Is White's Turn
+                    </div>
+                </div>
+                : <div className="row">
+                    <div className="black-turn">
+                        Is Black's Turn
                     </div>
                 </div>
             }
             <div className="board-row">
                 <button onClick={() => resetBoard()}>
                     RESET
+                </button>
+                <button onClick={() => set_is_white_turn(!is_white_turn)}>
+                    Change Turn
                 </button>
             </div>
         </div>
