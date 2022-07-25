@@ -1,4 +1,5 @@
 body {
+    background:rgb(250, 250, 250);
     font: 14px "Century Gothic", Futura, sans-serif;
     margin: 20px;
 }
@@ -20,7 +21,7 @@ body {
 
 .square {
     display: flex;
-    border: 1px solid #999;
+    border: 1px solid rgb(0, 0, 0);
     font-size: 12px;
     font-weight: bold;
     line-height: 34px;
@@ -107,6 +108,10 @@ body {
 
 }
 
+.col {
+    align-self: flex-start;
+}
+
 .alpha-label {
     padding: 16px 26.5px 16px;
 }
@@ -140,5 +145,41 @@ body {
 
 .white-space {
     margin: 32px;
+}
+
+.holder {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.history-piece {
+    height: auto;
+    width: auto;
+    max-height: 32px;
+    max-width: 32px;
+    margin: 2px 8px;
+}
+
+.kill-overlay {
+    position: absolute;
+    margin: 0px auto;
+    left: 0px;
+    right: 0px;
+    font-size: 12px;
+    text-align: center;
+    color: red;
+}
+
+.history {
+    align-self: flex-start;
+    background:rgb(213, 213, 213);
+    width: 256px;
+    height: 512px;
+    margin: 80px;
+    margin-top: 8px;
+    padding: 4px;
+    border: 5px solid black;
+    overflow-y: auto;
 }
 

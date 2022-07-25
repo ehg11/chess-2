@@ -35,6 +35,9 @@ export default function Board() {
     }
     let captured_piece = "";
 
+    // move history
+    let history = [];
+
     // movement globals
     let moveFrom = false;
     let move_captured_piece = false;
@@ -126,6 +129,11 @@ export default function Board() {
         }
     }
 
+    async function addHistory(turn) {
+        history.push(turn);
+        console.log(history);
+    }
+
     async function changeTurn() {
         white_turn = !white_turn;
     }
@@ -136,13 +144,17 @@ export default function Board() {
     }
 
     function movePieceFrom(old_pos, new_pos) {
+        let piece = getPieceAt(old_pos);
+        let color = getColorAt(old_pos);
+        let taken_piece = "";
+        let taken_piece_color = "";
         // console.log(`attempting to move piece from ${old_pos} to ${new_pos}`);
         if (!(possible_positions.includes(new_pos) || targets_at.includes(new_pos))) {
             // console.log("position is invalid, trying again");
             return false;
         }
         // check for banana catch
-        if (getPieceAt(old_pos) === "knight" && getPieceAt(new_pos) === "king_banana") {
+        if (piece === "knight" && getPieceAt(new_pos) === "king_banana") {
             if (getColorAt(old_pos) === getColorAt(new_pos)) {
                 // move king to old pos, remove banana
                 // save monkey index to set it's new pos
@@ -170,22 +182,22 @@ export default function Board() {
             for (let i = 0; i < curr_board_state.length; i++) {
                 if (curr_board_state[i].position === new_pos) {
                     // save the piece and color for documenting
-                    let piece = curr_board_state[i].type;
-                    let color = getColorAt(new_pos);
-                    if (piece === "king" || piece === "king_banana" || piece === "queen") {
+                    taken_piece = curr_board_state[i].type;
+                    taken_piece_color = getColorAt(new_pos);
+                    if (taken_piece === "king" || taken_piece === "king_banana" || taken_piece === "queen") {
                         curr_board_state[i].position = "";
                         curr_board_state[i].jailed = true;
-                        captured_piece = `${piece} ${color}`;
+                        captured_piece = `${taken_piece} ${taken_piece_color}`;
                         break;
                     }
                     curr_board_state[i].position = "";
                     curr_board_state[i].alive = false;
                     // modify the right tracking dictionaries
-                    if (color === "white") {
-                        incrementKilled(piece, killed_white_dict).then(set_killed_white(renderKilled("white")));
+                    if (taken_piece_color === "white") {
+                        incrementKilled(taken_piece, killed_white_dict).then(set_killed_white(renderKilled("white")));
                     }
-                    if (color === "black") {
-                        incrementKilled(piece, killed_black_dict).then(set_killed_black(renderKilled("black")));
+                    if (taken_piece_color === "black") {
+                        incrementKilled(taken_piece, killed_black_dict).then(set_killed_black(renderKilled("black")));
                     }
                     killed = true;
                     break;
@@ -251,6 +263,16 @@ export default function Board() {
             }
         }
         rook_enabled = killed;
+        let tracker = {
+            piece: piece,
+            color: color,
+            old_pos: old_pos,
+            new_pos: new_pos,
+            taken_piece: taken_piece,
+            taken_piece_color: taken_piece_color,
+        }
+        addHistory(tracker).then(set_board_history(renderHistory()));
+        
         return true;
     }
 
@@ -804,6 +826,11 @@ export default function Board() {
         else {
             let moved = movePieceFrom(selected_position, position);
             if (!moved) {
+                selected_position = "";
+                possible_positions = [];
+                targets_at = [];
+                setBoard(renderBoard());
+                moveFrom = !moveFrom;
                 return;
             }
             // if the monkey jumped, let them move again
@@ -910,6 +937,31 @@ export default function Board() {
         return killed;
     }
 
+    function renderHistory() {
+        const render_history = [];
+        history.forEach((element, index) => {
+            let piece = element.piece;
+            let color = element.color;
+            let from = element.old_pos;
+            let to = element.new_pos;
+            let taken = element.taken_piece;
+            let taken_color = element.taken_piece_color;
+            render_history.push(
+                <div className="row" key={index}>
+                    <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
+                    <div>{`${from} \u2b9e ${to}`}</div>
+                    { taken &&
+                        <div className="holder">
+                            <div className="kill-overlay">{`\u274c`}</div>
+                            <img className="history-piece killed-history" src={getPath(taken, taken_color)} alt={piece} />
+                        </div>
+                    }
+                </div>
+            )
+        })
+        return render_history;
+    }
+
     function renderBoard() {
         return (
             <div className="board">
@@ -984,36 +1036,47 @@ export default function Board() {
     const [full_board, setBoard] = useState(renderBoard());
     const [killed_white, set_killed_white] = useState(renderKilled("white"));
     const [killed_black, set_killed_black] = useState(renderKilled("black"));
+    const [board_history, set_board_history] = useState(renderHistory());
 
     return (
-        <div>
-            <div className="board-row row">
-                {killed_white}
-            </div>
-            { full_board }
-            <div className="board-row row">
-                {killed_black}
-            </div>
-            <div className="row">
-                { is_white_turn 
-                    ? <div className="white-turn">
-                            White
+        <div className="row">
+            <div className="col">
+                <div className="board-row row">
+                    {killed_white}
+                </div>
+                { full_board }
+                <div className="board-row row">
+                    {killed_black}
+                </div>
+                <div className="row">
+                    { is_white_turn 
+                        ? <div className="white-turn">
+                                White
+                        </div>
+                        : <div className="black-turn">
+                                Black
+                        </div>
+                    }
+                    <div className="status-message">
+                        {status}
                     </div>
-                    : <div className="black-turn">
-                            Black
-                    </div>
-                }
-                <div className="status-message">
-                    {status}
+                </div>
+                <div className="board-row">
+                    <button onClick={() => resetBoard()}>
+                        RESET
+                    </button>
+                    <button onClick={() => set_is_white_turn(!is_white_turn)}>
+                        Change Turn
+                    </button>
                 </div>
             </div>
-            <div className="board-row">
-                <button onClick={() => resetBoard()}>
-                    RESET
-                </button>
-                <button onClick={() => set_is_white_turn(!is_white_turn)}>
-                    Change Turn
-                </button>
+            <div className="col">
+                <div className="row status-message">
+                    Move History
+                </div>
+                <div className="history">
+                    {board_history}
+                </div>
             </div>
         </div>
     )
