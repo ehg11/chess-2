@@ -1,6 +1,6 @@
 import "./index.css"
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Square from "./Square.js"
 
 import { init_board_state, getPath, removeElement } from "./utils.js"
@@ -50,12 +50,11 @@ export default function Board() {
     let jumped_pos = [];
     let rook_enabled = false;
 
+    // win condition
+    let won = false;
+
     // all possible letters/columns in a chess board
     const col_letters = "abcdefgh"
-
-    useEffect(() => {
-        console.log(is_white_turn.toString());
-    }, [is_white_turn])
 
     // for each number, add a number to it, put into array
     for (let rowNum = 8; rowNum > 0; rowNum--) {
@@ -724,6 +723,9 @@ export default function Board() {
     }
 
     function click(position) {
+        if (won) {
+            return;
+        }
         // if a captured piece needs to be moved, select a jail cell
         if (move_captured_piece) {
             let [piece, color] = captured_piece.split(" ");
@@ -742,8 +744,15 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             moveFrom = false;
-            startNextTurn();
+            let jail_file = isWhite ? "z" : "i";
+            let jail_cells = [jail_file + 4, jail_file + 5];
+            won = jail_cells.every((cell) => getPieceAt(cell) !== "");
             setBoard(renderBoard());
+            if (won) {
+                set_status("is the Winner!");
+                return;
+            }
+            startNextTurn();
             return;
         }
         if (banana_catch) {
@@ -985,21 +994,19 @@ export default function Board() {
             <div className="board-row row">
                 {killed_black}
             </div>
-            <div className="board-row status-message">
-                {status}
+            <div className="row">
+                { is_white_turn 
+                    ? <div className="white-turn">
+                            White
+                    </div>
+                    : <div className="black-turn">
+                            Black
+                    </div>
+                }
+                <div className="status-message">
+                    {status}
+                </div>
             </div>
-            { is_white_turn 
-                ? <div className="row">
-                    <div className="white-turn">
-                        Is White's Turn
-                    </div>
-                </div>
-                : <div className="row">
-                    <div className="black-turn">
-                        Is Black's Turn
-                    </div>
-                </div>
-            }
             <div className="board-row">
                 <button onClick={() => resetBoard()}>
                     RESET

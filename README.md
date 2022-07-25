@@ -30,6 +30,7 @@
 - The king behaves exactly how it does in normal chess.
 - The king begins the game with a banana. See [The Banana Catch](#the-banana-catch)
 - When the king is taken, the game is **NOT** over. Instead, the king is captured and moved to the prison. See [Win Condition](#win-condition)
+- Because of the above case, the player is not forced to move the King is the king is in 'check' or 'checkmate'. The game will continue until the [Win Condition](#win-condition) is satisfied.
 
 ### Queen
 - The queen behaves exactly how it does in normal chess.
