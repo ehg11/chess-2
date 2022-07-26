@@ -1,6 +1,6 @@
 import "./index.css"
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Square from "./Square.js"
 
 import { init_board_state, getPath, removeElement } from "./utils.js"
@@ -56,11 +56,6 @@ export default function Board() {
 
     // win condition
     let won = false;
-    // sync with stateful
-    useEffect(() => {
-        console.log(`setting finished to ${won}`);
-        set_finished(won);
-    }, [won])
 
     // all possible letters/columns in a chess board
     const col_letters = "abcdefgh"
@@ -137,7 +132,6 @@ export default function Board() {
 
     async function addHistory(turn) {
         history.push(turn);
-        console.log(history);
     }
 
     async function changeTurn() {
@@ -147,6 +141,22 @@ export default function Board() {
     function startNextTurn() {
         changeTurn().then(set_is_white_turn(white_turn));
         set_status("Select a Piece to Move");
+    }
+
+    async function setWon(val) {
+        won = val;
+    }
+
+    function endGame() {
+        setWon(true).then(() => {
+            set_finished(won)
+        });
+        set_status("is the Winner!");
+    }
+
+    function forfeit(white_turn) {
+        set_is_white_turn(white_turn);
+        endGame();
     }
 
     function movePieceFrom(old_pos, new_pos) {
@@ -735,8 +745,7 @@ export default function Board() {
     }
 
     function resetBoard() {
-        console.log("resetting");
-        curr_board_state = JSON.parse(JSON.stringify(init_board_state))
+        // console.log("resetting");
 
         // movement globals
         moveFrom = false;
@@ -794,6 +803,7 @@ export default function Board() {
 
         // win condition
         won = false;
+        set_finished(false);
         setBoard(renderBoard());
     }
 
@@ -829,10 +839,10 @@ export default function Board() {
             moveFrom = false;
             let jail_file = isWhite ? "z" : "i";
             let jail_cells = [jail_file + 4, jail_file + 5];
-            won = jail_cells.every((cell) => getPieceAt(cell) !== "");
+            let jail_full = jail_cells.every((cell) => getPieceAt(cell) !== "");
             setBoard(renderBoard());
-            if (won) {
-                set_status("is the Winner!");
+            if (jail_full) {
+                endGame();
                 return;
             }
             startNextTurn();
@@ -1124,9 +1134,12 @@ export default function Board() {
                         </div>
                     </div>
                     <div className="row">
-                        { finished &&
-                            <button className="reset-button" onClick={() => resetBoard()}>
+                        { finished
+                            ? <button className="reset-button" onClick={() => resetBoard()}>
                                 Play Again?
+                            </button>
+                            : <button className="forfeit-button" onClick={() => forfeit(!is_white_turn)}>
+                                Forfeit?
                             </button>
                         }
                     </div>
