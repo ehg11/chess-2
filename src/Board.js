@@ -1,6 +1,6 @@
 import "./index.css"
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Square from "./Square.js"
 
 import { init_board_state, getPath, removeElement } from "./utils.js"
@@ -10,6 +10,7 @@ export default function Board() {
     // stateful variables
     let [status, set_status] = useState("Select a Piece to Move");
     let [is_white_turn, set_is_white_turn] = useState(true);
+    let [finished, set_finished] = useState(false);
     // not stateful, but used to modify stateful (because async (???) idrk)
     let white_turn = true;
 
@@ -55,6 +56,11 @@ export default function Board() {
 
     // win condition
     let won = false;
+    // sync with stateful
+    useEffect(() => {
+        console.log(`setting finished to ${won}`);
+        set_finished(won);
+    }, [won])
 
     // all possible letters/columns in a chess board
     const col_letters = "abcdefgh"
@@ -594,6 +600,7 @@ export default function Board() {
                 }
                 break;
             case "king":
+            case "king_banana":
                 // n
                 addIfInBoard(colNum, row + 1, dirs);
                 // ne
@@ -741,7 +748,61 @@ export default function Board() {
         monkey_jump = false;
         rook_enabled = false;
 
+        // stateful variables
+        set_status("Select a Piece to Move")
+        set_is_white_turn(true);
+        // not stateful, but used to modify stateful (because async (???) idrk)
+        white_turn = true;
+
+        // 2D Array to Be Interpreted as a Board
+        curr_board_state = JSON.parse(JSON.stringify(init_board_state));
+
+        // killed pieces
+        killed_white_dict = {
+            pawn: 0,
+            bishop: 0,
+            knight: 0,
+            rook: 0,
+            fish_queen: 0,
+        }
+        killed_black_dict = {
+            pawn: 0,
+            bishop: 0,
+            knight: 0,
+            rook: 0,
+            fish_queen: 0,
+        }
+        captured_piece = "";
+
+        // move history
+        history = [];
+
+        // movement globals
+        moveFrom = false;
+        move_captured_piece = false;
+        banana_catch = false;
+        selected_position = "";
+        possible_positions = [];
+        targets_at = [];
+        post_catch_spots = [];
+        post_catch_targets = [];
+
+        // trackers for special features
+        monkey_jump = false;
+        jumped_pos = [];
+        rook_enabled = false;
+
+        // win condition
+        won = false;
         setBoard(renderBoard());
+    }
+
+    function reformatToDisplay(string) {
+        let piece = string.split("_");
+        piece = piece.map((element) => {
+            return `${element[0].toUpperCase()}${element.slice(1)}`;
+        })
+        return piece.reverse().join(" ");
     }
 
     function click(position) {
@@ -858,7 +919,7 @@ export default function Board() {
                 }
                 move_captured_piece = true;
                 setBoard(renderBoard());
-                set_status(`Move the Captured ${captured_piece.split(" ")[0]} to a Jail Cell`);
+                set_status(`Move the Captured ${reformatToDisplay(captured_piece.split(" ")[0])} to a Jail Cell`);
                 return;
             }
             // if the banana catch was performed, select a spot for the monkey to land
@@ -1039,43 +1100,44 @@ export default function Board() {
     const [board_history, set_board_history] = useState(renderHistory());
 
     return (
-        <div className="row">
-            <div className="col">
-                <div className="board-row row">
-                    {killed_white}
-                </div>
-                { full_board }
-                <div className="board-row row">
-                    {killed_black}
-                </div>
-                <div className="row">
-                    { is_white_turn 
-                        ? <div className="white-turn">
-                                White
+        <div className="white-space">
+            <div className="row">
+                <div className="col">
+                    <div className="board-row row">
+                        {killed_white}
+                    </div>
+                    { full_board }
+                    <div className="board-row row">
+                        {killed_black}
+                    </div>
+                    <div className="row">
+                        { is_white_turn 
+                            ? <div className="white-turn">
+                                    White
+                            </div>
+                            : <div className="black-turn">
+                                    Black
+                            </div>
+                        }
+                        <div className="status-message">
+                            {status}
                         </div>
-                        : <div className="black-turn">
-                                Black
-                        </div>
-                    }
-                    <div className="status-message">
-                        {status}
+                    </div>
+                    <div className="row">
+                        { finished &&
+                            <button className="reset-button" onClick={() => resetBoard()}>
+                                Play Again?
+                            </button>
+                        }
                     </div>
                 </div>
-                <div className="board-row">
-                    <button onClick={() => resetBoard()}>
-                        RESET
-                    </button>
-                    <button onClick={() => set_is_white_turn(!is_white_turn)}>
-                        Change Turn
-                    </button>
-                </div>
-            </div>
-            <div className="col">
-                <div className="row status-message">
-                    Move History
-                </div>
-                <div className="history">
-                    {board_history}
+                <div className="col">
+                    <div className="row status-message">
+                        Move History
+                    </div>
+                    <div className="history">
+                        {board_history}
+                    </div>
                 </div>
             </div>
         </div>
