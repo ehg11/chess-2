@@ -1018,7 +1018,8 @@ export default function Board() {
             let taken = element.taken_piece;
             let taken_color = element.taken_piece_color;
             render_history.push(
-                <div className="row" key={index}>
+                <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
+                    <p className="turn-num">{index}</p>
                     <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
                     <div>{`${from} \u2b9e ${to}`}</div>
                     { taken &&
@@ -1027,6 +1028,7 @@ export default function Board() {
                             <img className="history-piece killed-history" src={getPath(taken, taken_color)} alt={piece} />
                         </div>
                     }
+                    <p className="turn-num"/>
                 </div>
             )
         })
@@ -1144,13 +1146,11 @@ export default function Board() {
                         }
                     </div>
                 </div>
-                <div className="col">
-                    <div className="row status-message">
-                        Move History
+                <div className="history">
+                    <div className="history-title">
+                        <p>Move History</p>
                     </div>
-                    <div className="history">
-                        {board_history}
-                    </div>
+                    {board_history}
                 </div>
             </div>
         </div>
