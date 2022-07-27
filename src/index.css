@@ -163,7 +163,7 @@ body {
     width: auto;
     max-height: 32px;
     max-width: 32px;
-    margin: 2px 8px;
+    margin: 2px 0px 2px 0px;
 }
 
 .kill-overlay {
@@ -205,19 +205,22 @@ body {
 }
 
 .history-odd {
+    display: flex;
+    position: relative;
     background:rgb(229, 228, 228);
     width: 100%
 }
 
 .history-even {
     display: flex;
-    flex-wrap: nowrap;
-    width: 100%
+    width: 100%;
+    ;
 }
 
 .turn-num {
+    margin-left: 16px;
     flex: 1;
-    align-self: flex-start;
+    font-weight: bold;
 }
 
 .reset-button {

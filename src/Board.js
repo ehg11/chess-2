@@ -1020,15 +1020,17 @@ export default function Board() {
             render_history.push(
                 <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
                     <p className="turn-num">{index}</p>
-                    <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
-                    <div>{`${from} \u2b9e ${to}`}</div>
-                    { taken &&
-                        <div className="holder">
-                            <div className="kill-overlay">{`\u274c`}</div>
-                            <img className="history-piece killed-history" src={getPath(taken, taken_color)} alt={piece} />
-                        </div>
-                    }
-                    <p className="turn-num"/>
+                    <div className="row">
+                        <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
+                        <div>{`${from} \u2b9e ${to}`}</div>
+                        { taken &&
+                            <div className="holder">
+                                <div className="kill-overlay">{`\u274c`}</div>
+                                <img className="history-piece killed-history" src={getPath(taken, taken_color)} alt={piece} />
+                            </div>
+                        }
+                    </div>
+                    <p className="turn-num"></p>
                 </div>
             )
         })
