@@ -38,6 +38,7 @@ export default function Board() {
 
     // move history
     let history = [];
+    let tracker = {};
 
     // movement globals
     let moveFrom = false;
@@ -139,6 +140,9 @@ export default function Board() {
     }
 
     function startNextTurn() {
+        // reset the movement var, prob could've done elsewhere but w/e
+        jumped_pos = [];
+        addHistory(tracker).then(set_board_history(renderHistory()));
         changeTurn().then(set_is_white_turn(white_turn));
         set_status("Select a Piece to Move");
     }
@@ -226,8 +230,8 @@ export default function Board() {
                 break;
             }
         }
-        // special check for monkey if monkey jumped
-        if (getPieceAt(new_pos) === "knight" && !killed) {
+        // special check for monkey if monkey jumped and killed or captured
+        if (getPieceAt(new_pos) === "knight" && !(killed)) {
             let [col, row] = pos2index(old_pos);
             let colNum = alphaVal(col);
             let one_away = [];
@@ -279,16 +283,15 @@ export default function Board() {
             }
         }
         rook_enabled = killed;
-        let tracker = {
+        tracker = {
             piece: piece,
             color: color,
             old_pos: old_pos,
             new_pos: new_pos,
+            jumped_pos: jumped_pos,
             taken_piece: taken_piece,
             taken_piece_color: taken_piece_color,
         }
-        addHistory(tracker).then(set_board_history(renderHistory()));
-        
         return true;
     }
 
@@ -785,6 +788,7 @@ export default function Board() {
 
         // move history
         history = [];
+        set_board_history(renderHistory());
 
         // movement globals
         moveFrom = false;
@@ -897,6 +901,12 @@ export default function Board() {
         else {
             let moved = movePieceFrom(selected_position, position);
             if (!moved) {
+                // special case for monkey jump
+                // if the piece is a monkey and they jumped, they must continue moving monkey
+                if (getPieceAt(selected_position) === "knight" && jumped_pos.length > 0) {
+                    return;
+                }
+                // otherwise, just reset and let them pick something else
                 selected_position = "";
                 possible_positions = [];
                 targets_at = [];
@@ -1017,12 +1027,16 @@ export default function Board() {
             let to = element.new_pos;
             let taken = element.taken_piece;
             let taken_color = element.taken_piece_color;
+            let jumped_pos = element.jumped_pos;
             render_history.push(
                 <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
-                    <p className="turn-num">{index}</p>
+                    <p className="turn-num">{index + 1}</p>
                     <div className="row">
                         <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
-                        <div>{`${from} \u2b9e ${to}`}</div>
+                        { piece !== "knight" && jumped_pos.length > 1
+                            ? <div>{`${from} \u2b9e ${to}`}</div>
+                            : <div>{`${jumped_pos.join(" \u2b9e ")} \u2b9e ${to}`}</div>
+                        }
                         { taken &&
                             <div className="holder">
                                 <div className="kill-overlay">{`\u274c`}</div>
