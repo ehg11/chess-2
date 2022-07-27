@@ -17,6 +17,7 @@ export default function Board() {
     // 2D Array to Be Interpreted as a Board
     let boardArray = [];
     let jail_squares = ["i4", "z4", "i5", "z5"];
+    let jail_pieces = ["king", "king_banana", "queen"];
     let curr_board_state = JSON.parse(JSON.stringify(init_board_state));
 
     // killed pieces
@@ -197,6 +198,7 @@ export default function Board() {
             }
         }
         let killed = false;
+        let captured = false;
         // if piece was taken, change position to "", set alive to false (used for tracking)
         if (targets_at.includes(new_pos)) {
             for (let i = 0; i < curr_board_state.length; i++) {
@@ -208,6 +210,7 @@ export default function Board() {
                         curr_board_state[i].position = "";
                         curr_board_state[i].jailed = true;
                         captured_piece = `${taken_piece} ${taken_piece_color}`;
+                        captured = true;
                         break;
                     }
                     curr_board_state[i].position = "";
@@ -220,6 +223,7 @@ export default function Board() {
                         incrementKilled(taken_piece, killed_black_dict).then(set_killed_black(renderKilled("black")));
                     }
                     killed = true;
+                    console.log(`killed piece: ${killed}`);
                     break;
                 }
             }
@@ -230,33 +234,40 @@ export default function Board() {
                 break;
             }
         }
-        // special check for monkey if monkey jumped and killed or captured
-        if (getPieceAt(new_pos) === "knight" && !(killed)) {
-            let [col, row] = pos2index(old_pos);
-            let colNum = alphaVal(col);
-            let one_away = [];
-            // n
-            addIfInBoard(colNum, row + 1, one_away);
-            // ne
-            addIfInBoard(colNum + 1, row + 1, one_away);
-            // e
-            addIfInBoard(colNum + 1, row, one_away);
-            // se
-            addIfInBoard(colNum + 1, row - 1, one_away);
-            // s
-            addIfInBoard(colNum, row - 1, one_away);
-            // sw
-            addIfInBoard(colNum - 1, row - 1, one_away);
-            // w
-            addIfInBoard(colNum - 1, row, one_away);
-            // nw
-            addIfInBoard(colNum - 1, row + 1, one_away); 
-            // stand still
-            addIfInBoard(colNum, row, one_away);
-            if (!one_away.includes(new_pos)) {
-                monkey_jump = true;
-            } 
+        // special check for monkey
+        // can continue jumping unless they killed or captured a piece
+        if (getPieceAt(new_pos) === "knight") {
+            if (!killed && !captured) {
+                let [col, row] = pos2index(old_pos);
+                let colNum = alphaVal(col);
+                let one_away = [];
+                // n
+                addIfInBoard(colNum, row + 1, one_away);
+                // ne
+                addIfInBoard(colNum + 1, row + 1, one_away);
+                // e
+                addIfInBoard(colNum + 1, row, one_away);
+                // se
+                addIfInBoard(colNum + 1, row - 1, one_away);
+                // s
+                addIfInBoard(colNum, row - 1, one_away);
+                // sw
+                addIfInBoard(colNum - 1, row - 1, one_away);
+                // w
+                addIfInBoard(colNum - 1, row, one_away);
+                // nw
+                addIfInBoard(colNum - 1, row + 1, one_away); 
+                // stand still
+                addIfInBoard(colNum, row, one_away);
+                if (!one_away.includes(new_pos)) {
+                    monkey_jump = true;
+                } 
+                else {
+                    monkey_jump = false;
+                }
+            }
             else {
+                console.log("here");
                 monkey_jump = false;
             }
         }
@@ -291,7 +302,10 @@ export default function Board() {
             jumped_pos: jumped_pos,
             taken_piece: taken_piece,
             taken_piece_color: taken_piece_color,
+            captured_pos: null,
         }
+        if (jail_pieces.includes(taken_piece))
+        console.log(tracker);
         return true;
     }
 
@@ -1020,6 +1034,7 @@ export default function Board() {
 
     function renderHistory() {
         const render_history = [];
+        console.log(history);
         history.forEach((element, index) => {
             let piece = element.piece;
             let color = element.color;
@@ -1028,12 +1043,16 @@ export default function Board() {
             let taken = element.taken_piece;
             let taken_color = element.taken_piece_color;
             let jumped_pos = element.jumped_pos;
+            let captured_pos = element.captured_pos;
+            if (jumped_pos && jumped_pos.at(-1) !== from && from !== to) {
+                jumped_pos.push(from);
+            }
             render_history.push(
                 <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
                     <p className="turn-num">{index + 1}</p>
                     <div className="row">
                         <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
-                        { piece !== "knight" && jumped_pos.length > 1
+                        { !(piece === "knight" && jumped_pos.length > 0)
                             ? <div>{`${from} \u2b9e ${to}`}</div>
                             : <div>{`${jumped_pos.join(" \u2b9e ")} \u2b9e ${to}`}</div>
                         }
