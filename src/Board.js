@@ -911,6 +911,7 @@ export default function Board() {
             possible_positions = [];
             targets_at = [];
             moveFrom = false;
+            monkey_jump = false;
             startNextTurn();
             setBoard(renderBoard());
             return;
@@ -925,7 +926,7 @@ export default function Board() {
             if (is_white !== white_turn) {
                 return;
             }
-            // console.log(`selected ${piece}`);
+            console.log(`selected ${piece}`);
             [possible_positions, targets_at] = possiblePositions(piece, position);
             // console.log(`possible positions: ${possible_positions}`);
             // console.log(`targets at: ${targets_at}`);
@@ -938,6 +939,7 @@ export default function Board() {
         else {
             let moved = movePieceFrom(selected_position, position);
             if (!moved) {
+                console.log("here");
                 // special case for monkey jump
                 // if the piece is a monkey and they jumped, they must continue moving monkey
                 if (getPieceAt(selected_position) === "knight" && jumped_pos.length > 0) {
