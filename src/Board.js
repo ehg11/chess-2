@@ -361,7 +361,6 @@ export default function Board() {
     }
 
     function canDoBananaCatch(color) {
-        console.log("checking can catch");
         let jail_adj = color === "white" ? ["a4","a5"] : ["h4","h5"];
         let jail_file = color === "white" ? "z" : "i";
         for (let i = 0; i < jail_adj.length; i++) {
@@ -384,7 +383,6 @@ export default function Board() {
                             let adj_pos = index2pos(colNum + i, row + j);
                             // if there is a piece 
                             if (getPieceAt(adj_pos) !== "") {
-                                console.log("in check");
                                 // check for a spot beyond it
                                 let jump_pos = index2pos(colNum + (2 * i), row + (2 * j));
                                 if (jumped_pos.includes(jump_pos)) {
@@ -402,9 +400,6 @@ export default function Board() {
                 }
             }
         }
-        console.log(post_catch_spots.length + post_catch_targets.length > 0);
-        console.log(post_catch_spots);
-        console.log(post_catch_targets);
         return post_catch_spots.length + post_catch_targets.length > 0;
     }
 
@@ -499,7 +494,6 @@ export default function Board() {
                 break;
             case "knight":
                 if (canDoBananaCatch(color)) {
-                    console.log("can catch");
                     let king_col = color === "white" ? "z" : "i";
                     let king_pos = king_col + row;
                     poss_pos.add(king_pos);
@@ -938,7 +932,6 @@ export default function Board() {
             // console.log("possible positions: " + possible_positions);
             selected_position = position;
             set_status("Select a Position to Move To")
-            console.log(possible_positions);
             setBoard(renderBoard());
         }
         // placing a piece
@@ -965,7 +958,6 @@ export default function Board() {
                 // 2 cases, banana catch and not banana catch
                 if (!banana_catch) {
                     // no banana catch, reset vars and return, prep for jump
-                    console.log("resetting post catch vars");
                     post_catch_spots = [];
                     post_catch_targets = [];
                     [possible_positions, targets_at] = possiblePositions("knight", selected_position);
@@ -1085,6 +1077,7 @@ export default function Board() {
     }
 
     function renderHistory() {
+        console.log(history);
         let render_history = [];
         let turn_num = 0;
         history.forEach((element, index) => {
@@ -1095,7 +1088,8 @@ export default function Board() {
             let taken = element.taken_piece;
             let taken_color = element.taken_piece_color;
             // spread operator for shallow copy
-            let jumped_pos = [...element.jumped_pos];
+            // type frickery to remove dupes
+            let jumped_pos = Array.from(new Set([...element.jumped_pos]));
             let jailed_pos = "";
             let h_banana_catch = false;
             let jail_file = ["z", "i"];
