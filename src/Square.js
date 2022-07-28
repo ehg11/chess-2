@@ -38,7 +38,10 @@ export default function Square(props) {
     else {
         return (
             <button className={`square white ${props.selected ? "selected" : ""}`} onClick={ props.onClick }>
-                <div className={`${props.available ? "available" : ""} ${props.target ? "target" : ""}`}></div>
+                { !bananaCatchSquare()
+                    ? <div className={`${props.available ? "available" : ""} ${props.target ? "target" : ""}`}></div> 
+                    : <div className="banana-catch"></div>    
+                }
                 <img className="piece" src={ getPath(props.piece, props.color) } alt={ props.piece }/>
             </button>
         )

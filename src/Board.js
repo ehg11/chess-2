@@ -192,8 +192,20 @@ export default function Board() {
                         curr_board_state[i].jailed = false;
                     }
                 }
+                // set monkey position to the jail, prep for jump
                 curr_board_state[index].position = new_pos;
                 banana_catch = true;
+                tracker = {
+                    piece: "king_banana",
+                    color: color,
+                    old_pos: new_pos,
+                    new_pos: old_pos,
+                    jumped_pos: jumped_pos,
+                    taken_piece: taken_piece,
+                    taken_piece_color: taken_piece_color,
+                }
+                jumped_pos.push(old_pos);
+                addHistory(tracker).then(set_board_history(renderHistory()));
                 return true;
             }
         }
@@ -223,7 +235,6 @@ export default function Board() {
                         incrementKilled(taken_piece, killed_black_dict).then(set_killed_black(renderKilled("black")));
                     }
                     killed = true;
-                    console.log(`killed piece: ${killed}`);
                     break;
                 }
             }
@@ -267,7 +278,6 @@ export default function Board() {
                 }
             }
             else {
-                console.log("here");
                 monkey_jump = false;
             }
         }
@@ -303,8 +313,6 @@ export default function Board() {
             taken_piece: taken_piece,
             taken_piece_color: taken_piece_color,
         }
-        if (jail_pieces.includes(taken_piece))
-        console.log(tracker);
         return true;
     }
 
@@ -882,6 +890,15 @@ export default function Board() {
                     curr_board_state[i].position = position;
                 }
             }
+            tracker = {
+                piece: "knight",
+                color: getColorAt(position),
+                old_pos: monkey_pos,
+                new_pos: position,
+                jumped_pos: jumped_pos,
+                taken_piece: "",
+                taken_piece_color: "",
+            }
             banana_catch = false;
             selected_position = "";
             possible_positions = [];
@@ -1032,7 +1049,7 @@ export default function Board() {
     }
 
     function renderHistory() {
-        const render_history = [];
+        let render_history = [];
         console.log(history);
         history.forEach((element, index) => {
             let piece = element.piece;
@@ -1041,10 +1058,13 @@ export default function Board() {
             let to = element.new_pos;
             let taken = element.taken_piece;
             let taken_color = element.taken_piece_color;
-            let jumped_pos = element.jumped_pos;
+            // spread operator for shallow copy
+            let jumped_pos = [...element.jumped_pos];
             let jailed_pos = "";
+            let h_banana_catch = false;
+            let jail_file = ["z", "i"];
             // check for monkey jump list
-            if (jumped_pos && jumped_pos.at(-1) !== from && from !== to) {
+            if (jumped_pos && taken) {
                 jumped_pos.push(from);
             }
             // check for captured piece
@@ -1053,6 +1073,27 @@ export default function Board() {
                     getPieceAt(cell) === taken && getColorAt(cell) === taken_color
                 );
             }
+            // check for banana catch
+            // if a piece moved from the jail and king_banana
+            if (jail_file.includes(from[0]) && piece === "king_banana") {
+                h_banana_catch = true;
+            }
+            // check if the monkey jumped out
+            if (piece === "knight" && jail_file.includes(from[0])) {
+                jumped_pos.push(from);
+            }
+            // replace 'z' and 'i' with jail file
+            if (jail_file.includes(from[0])) {
+                from = `jl${from[1]}`
+            }
+            if (jail_file.includes(to[0])) {
+                to = `jl${to[1]}`;
+            }
+            jumped_pos.forEach((element, index) => {
+                if (jail_file.includes(jumped_pos[index][0])) {
+                    jumped_pos[index] = `jl${jumped_pos[index][1]}`;
+                }
+            })
             render_history.push(
                 <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
                     <p className="turn-num">{index + 1}</p>
@@ -1071,6 +1112,12 @@ export default function Board() {
                         { jailed_pos &&
                             <div>
                                 {`\u2b9e jl${jailed_pos[1]}`}
+                            </div>
+                        }
+                        { h_banana_catch &&
+                            <div className="row history-banana-catch">
+                                {` \u2b9e`}
+                                <img className="history-piece" src={getPath("king", color)} alt={piece} />
                             </div>
                         }
                     </div>
@@ -1155,7 +1202,7 @@ export default function Board() {
     const [full_board, setBoard] = useState(renderBoard());
     const [killed_white, set_killed_white] = useState(renderKilled("white"));
     const [killed_black, set_killed_black] = useState(renderKilled("black"));
-    const [board_history, set_board_history] = useState(renderHistory());
+    const [board_history, set_board_history] = useState([]);
 
     const bottomRef = useRef(null);
 
