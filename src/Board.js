@@ -1,6 +1,6 @@
 import "./index.css"
 
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Square from "./Square.js"
 
 import { init_board_state, getPath, removeElement } from "./utils.js"
@@ -302,7 +302,6 @@ export default function Board() {
             jumped_pos: jumped_pos,
             taken_piece: taken_piece,
             taken_piece_color: taken_piece_color,
-            captured_pos: null,
         }
         if (jail_pieces.includes(taken_piece))
         console.log(tracker);
@@ -1043,9 +1042,16 @@ export default function Board() {
             let taken = element.taken_piece;
             let taken_color = element.taken_piece_color;
             let jumped_pos = element.jumped_pos;
-            let captured_pos = element.captured_pos;
+            let jailed_pos = "";
+            // check for monkey jump list
             if (jumped_pos && jumped_pos.at(-1) !== from && from !== to) {
                 jumped_pos.push(from);
+            }
+            // check for captured piece
+            if (jail_pieces.includes(taken)) {
+                jailed_pos = jail_squares.find(cell => 
+                    getPieceAt(cell) === taken && getColorAt(cell) === taken_color
+                );
             }
             render_history.push(
                 <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
@@ -1060,6 +1066,11 @@ export default function Board() {
                             <div className="holder">
                                 <div className="kill-overlay">{`\u274c`}</div>
                                 <img className="history-piece killed-history" src={getPath(taken, taken_color)} alt={piece} />
+                            </div>
+                        }
+                        { jailed_pos &&
+                            <div>
+                                {`\u2b9e jl${jailed_pos[1]}`}
                             </div>
                         }
                     </div>
@@ -1146,6 +1157,12 @@ export default function Board() {
     const [killed_black, set_killed_black] = useState(renderKilled("black"));
     const [board_history, set_board_history] = useState(renderHistory());
 
+    const bottomRef = useRef(null);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({behavior: "smooth"});
+    }, [board_history]);
+
     return (
         <div className="white-space">
             <div className="row">
@@ -1185,7 +1202,10 @@ export default function Board() {
                     <div className="history-title">
                         <p>Move History</p>
                     </div>
-                    {board_history}
+                    <div className="history-entries">
+                        {board_history}
+                        <div ref={ bottomRef } />
+                    </div>
                 </div>
             </div>
         </div>
