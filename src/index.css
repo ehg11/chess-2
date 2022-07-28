@@ -208,14 +208,14 @@ body {
     box-shadow: 0px 2px rgb(150, 150, 150);
 }
 
-.history-odd {
+.history-black {
     display: flex;
     flex: 1;
     background:rgb(229, 228, 228);
     width: 100%
 }
 
-.history-even {
+.history-white {
     display: flex;
     width: 100%;
 }
@@ -245,6 +245,10 @@ body {
     margin-left: 16px;
     flex: 1;
     font-weight: bold;
+}
+
+.invisible {
+    visibility: hidden;
 }
 
 .reset-button {

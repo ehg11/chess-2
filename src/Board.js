@@ -361,6 +361,7 @@ export default function Board() {
     }
 
     function canDoBananaCatch(color) {
+        console.log("checking can catch");
         let jail_adj = color === "white" ? ["a4","a5"] : ["h4","h5"];
         let jail_file = color === "white" ? "z" : "i";
         for (let i = 0; i < jail_adj.length; i++) {
@@ -383,8 +384,12 @@ export default function Board() {
                             let adj_pos = index2pos(colNum + i, row + j);
                             // if there is a piece 
                             if (getPieceAt(adj_pos) !== "") {
+                                console.log("in check");
                                 // check for a spot beyond it
                                 let jump_pos = index2pos(colNum + (2 * i), row + (2 * j));
+                                if (jumped_pos.includes(jump_pos)) {
+                                    continue;
+                                }
                                 if (getColorAt(jump_pos) === "") {
                                     post_catch_spots.push(jump_pos);
                                 }
@@ -397,6 +402,9 @@ export default function Board() {
                 }
             }
         }
+        console.log(post_catch_spots.length + post_catch_targets.length > 0);
+        console.log(post_catch_spots);
+        console.log(post_catch_targets);
         return post_catch_spots.length + post_catch_targets.length > 0;
     }
 
@@ -491,6 +499,7 @@ export default function Board() {
                 break;
             case "knight":
                 if (canDoBananaCatch(color)) {
+                    console.log("can catch");
                     let king_col = color === "white" ? "z" : "i";
                     let king_pos = king_col + row;
                     poss_pos.add(king_pos);
@@ -592,8 +601,11 @@ export default function Board() {
                 }
                 // if jumped, add option to stay still
                 if (monkey_jump) {
-                    dirs.push(position);
-                    jumped_pos.forEach((i) => removeElement(dirs, i));
+                    // if in jail, cannot stay in jail
+                    if (!jail_squares.includes(position)) {
+                        dirs.push(position);
+                        jumped_pos.forEach((i) => removeElement(dirs, i));
+                    }
                 }
                 break;
             case "rook":
@@ -809,6 +821,7 @@ export default function Board() {
 
         // move history
         history = [];
+        tracker = {};
         set_board_history(renderHistory());
 
         // movement globals
@@ -925,6 +938,7 @@ export default function Board() {
             // console.log("possible positions: " + possible_positions);
             selected_position = position;
             set_status("Select a Position to Move To")
+            console.log(possible_positions);
             setBoard(renderBoard());
         }
         // placing a piece
@@ -948,9 +962,43 @@ export default function Board() {
             if (monkey_jump) {
                 jumped_pos.push(selected_position);
                 selected_position = position;
-                [possible_positions, targets_at] = possiblePositions("knight", selected_position);
+                // 2 cases, banana catch and not banana catch
+                if (!banana_catch) {
+                    // no banana catch, reset vars and return, prep for jump
+                    console.log("resetting post catch vars");
+                    post_catch_spots = [];
+                    post_catch_targets = [];
+                    [possible_positions, targets_at] = possiblePositions("knight", selected_position);
+                    setBoard(renderBoard());
+                    return;
+                }
+                else {
+                    possible_positions = post_catch_spots;
+                    targets_at = post_catch_targets;
+                    post_catch_spots = [];
+                    post_catch_targets = [];
+                    // console.log(`possible positions: ${possible_positions}`);
+                    // console.log(`targets at: ${targets_at}`);
+                    setBoard(renderBoard());
+                    set_status(`Move the Monkey Back onto the Board`);
+                    return; 
+                }
+            }
+            // if the banana catch was performed, select a spot for the monkey to land
+            if (banana_catch) {
+                possible_positions = post_catch_spots;
+                targets_at = post_catch_targets;
+                post_catch_spots = [];
+                post_catch_targets = [];
+                // console.log(`possible positions: ${possible_positions}`);
+                // console.log(`targets at: ${targets_at}`);
                 setBoard(renderBoard());
+                set_status(`Move the Monkey Back onto the Board`);
                 return;
+            }
+            else {
+                post_catch_spots = [];
+                post_catch_targets = [];
             }
             selected_position = "";
             possible_positions = [];
@@ -972,19 +1020,7 @@ export default function Board() {
                 set_status(`Move the Captured ${reformatToDisplay(captured_piece.split(" ")[0])} to a Jail Cell`);
                 return;
             }
-            // if the banana catch was performed, select a spot for the monkey to land
-            if (banana_catch) {
-                possible_positions = post_catch_spots;
-                targets_at = post_catch_targets;
-                // console.log(`possible positions: ${possible_positions}`);
-                // console.log(`targets at: ${targets_at}`);
-                setBoard(renderBoard());
-                set_status(`Move the Monkey Back onto the Board`);
-                return;
-            }
-            else {
-                startNextTurn();
-            }
+            startNextTurn();
         }
         moveFrom = !moveFrom;
     }
@@ -1050,7 +1086,7 @@ export default function Board() {
 
     function renderHistory() {
         let render_history = [];
-        console.log(history);
+        let turn_num = 0;
         history.forEach((element, index) => {
             let piece = element.piece;
             let color = element.color;
@@ -1063,6 +1099,7 @@ export default function Board() {
             let jailed_pos = "";
             let h_banana_catch = false;
             let jail_file = ["z", "i"];
+            let diff_turn = true;
             // check for monkey jump list
             if (jumped_pos && taken) {
                 jumped_pos.push(from);
@@ -1089,14 +1126,21 @@ export default function Board() {
             if (jail_file.includes(to[0])) {
                 to = `jl${to[1]}`;
             }
-            jumped_pos.forEach((element, index) => {
+            jumped_pos.forEach((_element, index) => {
                 if (jail_file.includes(jumped_pos[index][0])) {
                     jumped_pos[index] = `jl${jumped_pos[index][1]}`;
                 }
             })
+            // set turn num
+            if (index === 0 || history[index - 1].color !== color) {
+                turn_num++;
+            }
+            else {
+                diff_turn = false;
+            }
             render_history.push(
-                <div className={`row ${index % 2 !== 0 ? "history-odd" : "history-even"}`} key={index}>
-                    <p className="turn-num">{index + 1}</p>
+                <div className={`row ${color === "black" ? "history-black" : "history-white"}`} key={index}>
+                    <p className={`turn-num ${diff_turn ? "" : "invisible"}`}>{turn_num}</p>
                     <div className="row">
                         <img className="history-piece" src={getPath(piece, color)} alt={piece}/>
                         { !(piece === "knight" && jumped_pos.length > 0)
