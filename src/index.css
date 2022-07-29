@@ -294,8 +294,11 @@ body {
 }
 
 .nav {
-    width: 10%;
+    width: 6%;
     margin: 0px;
+    background: lightgray;
+    border-radius: 999px;
+    padding: 0px 0px;
 }
 
 .nav-align {
@@ -316,9 +319,8 @@ li {
 }
 
 .logo {
-    height: auto;
     width: auto;
-    max-width: 128px;
+    max-width: 64px;
 }
 
 .center-col {
@@ -326,8 +328,24 @@ li {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    padding: 5px;
+}
+
+.logo-padding {
+    margin-top: 20px;
 }
 
 .nav > .center-col {
-    gap: 30px;
+    gap: 40px;
+}
+
+.nav > .center-col > * {
+    width: auto;
+    height: auto;
+    border-radius: 100px;
+    background: lightgrey;
+}
+
+.nav > .center-col > *:hover {
+    filter: brightness(90%);
 }
