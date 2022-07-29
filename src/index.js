@@ -2,7 +2,7 @@ import "./index.css"
 
 import React from "react"
 import ReactDOM from "react-dom/client"
-import Board from "./Board.js"
+import App from "./App.js"
   
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<Board />);
+root.render(<App />);

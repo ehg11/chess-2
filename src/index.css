@@ -293,3 +293,41 @@ body {
     transform: translate(-50%, -50%);
 }
 
+.nav {
+    width: 10%;
+    margin: 0px;
+}
+
+.nav-align {
+    align-self: stretch;
+}
+
+li {
+    list-style-type: none;
+}
+
+.app-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.grow {
+    flex: 1;
+}
+
+.logo {
+    height: auto;
+    width: auto;
+    max-width: 128px;
+}
+
+.center-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.nav > .center-col {
+    gap: 30px;
+}
