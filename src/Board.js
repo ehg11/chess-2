@@ -91,6 +91,10 @@ export default function Board() {
         if (getPieceAt(position) === "") {
             return color;
         }
+        // special case for bear
+        if (getPieceAt(position) === "bear") {
+            return color;
+        }
         for (let i = 0; i < curr_board_state.length; i++) {
             if (curr_board_state[i].position === position) {
                 color = curr_board_state[i].isWhite ? "white" : "black";
@@ -765,6 +769,16 @@ export default function Board() {
                     } 
                 }
                 break;
+            case "bear":
+                for (let i = -1; i < 2; i++) {
+                    for (let j = -1; j < 2; j++) {
+                        if (i === 0 && j === 0) {
+                            continue;
+                        }
+                        addIfInBoard(colNum + i, row + j, dirs);
+                    }
+                }
+                break;
             default:
                 break;  
         }
@@ -918,40 +932,79 @@ export default function Board() {
         }
         // selecting a piece
         if (!moveFrom) {
-            let piece = getPieceAt(position);
-            if (piece === "" || jail_squares.includes(position)) {
-                return;
+            // first check if the player selected the bear
+            if (position === "bear") {
+                let bear_positions = ["d4","d5","e4","e5"];
+                bear_positions.forEach(element => {
+                    if (getPieceAt(element) === "") {
+                        possible_positions.push(element);
+                    }
+                });
+                selected_position = "bear";
             }
-            let is_white = getColorAt(position) === "white";
-            if (is_white !== white_turn) {
-                return;
+            else {
+                let piece = getPieceAt(position);
+                if (piece === "" || jail_squares.includes(position)) {
+                    return;
+                }
+                let is_white = getColorAt(position) === "white";
+                // any player can control the bear
+                if (is_white !== white_turn && piece !== "bear") {
+                    return;
+                }
+                console.log(`selected ${piece}`);
+                [possible_positions, targets_at] = possiblePositions(piece, position);
+                // console.log(`possible positions: ${possible_positions}`);
+                // console.log(`targets at: ${targets_at}`);
+                // console.log("possible positions: " + possible_positions);
+                selected_position = position;
             }
-            console.log(`selected ${piece}`);
-            [possible_positions, targets_at] = possiblePositions(piece, position);
-            // console.log(`possible positions: ${possible_positions}`);
-            // console.log(`targets at: ${targets_at}`);
-            // console.log("possible positions: " + possible_positions);
-            selected_position = position;
             set_status("Select a Position to Move To")
             setBoard(renderBoard());
         }
         // placing a piece
         else {
-            let moved = movePieceFrom(selected_position, position);
-            if (!moved) {
-                console.log("here");
-                // special case for monkey jump
-                // if the piece is a monkey and they jumped, they must continue moving monkey
-                if (getPieceAt(selected_position) === "knight" && jumped_pos.length > 0) {
+            // check if the player selected a bear 
+            if (selected_position === "bear") {
+                // make sure the player selected a possible position
+                if (!possible_positions.includes(position)) {
+                    selected_position = "";
+                    possible_positions = [];
+                    targets_at = [];
+                    setBoard(renderBoard());
+                    moveFrom = !moveFrom;
                     return;
                 }
-                // otherwise, just reset and let them pick something else
-                selected_position = "";
-                possible_positions = [];
-                targets_at = [];
-                setBoard(renderBoard());
-                moveFrom = !moveFrom;
-                return;
+                curr_board_state.find(element => element.type === "bear").position = position;
+                // tracker stuff
+                tracker = {
+                    piece: "bear",
+                    color: null,
+                    old_pos: "C",
+                    new_pos: position,
+                    jumped_pos: jumped_pos,
+                    taken_piece: "",
+                    taken_piece_color: "",
+                }
+            }
+            // otherwise, just do standard moving
+            else {
+                let moved = movePieceFrom(selected_position, position);
+                if (!moved) {
+                    console.log("here");
+                    // special case for monkey jump
+                    // if the piece is a monkey and they jumped, they must continue moving monkey
+                    if (getPieceAt(selected_position) === "knight" && jumped_pos.length > 0) {
+                        return;
+                    }
+                    // otherwise, just reset and let them pick something else
+                    selected_position = "";
+                    possible_positions = [];
+                    targets_at = [];
+                    setBoard(renderBoard());
+                    moveFrom = !moveFrom;
+                    return;
+                }
             }
             // if the monkey jumped, let them move again
             if (monkey_jump) {
@@ -1084,7 +1137,7 @@ export default function Board() {
         let turn_num = 0;
         history.forEach((element, index) => {
             let piece = element.piece;
-            let color = element.color;
+            let color = element.color ? element.color : "";
             let from = element.old_pos;
             let to = element.new_pos;
             let taken = element.taken_piece;
@@ -1169,8 +1222,14 @@ export default function Board() {
     }
 
     function renderBoard() {
+        let show_bear = curr_board_state.find(ele => ele.type === "bear").position === "center";
         return (
             <div className="board">
+                { show_bear &&
+                    <button className="bear" onClick={() => click("bear")}>
+                        <img src={getPath("bear", null)} alt={"bear"} className="piece" />
+                    </button>
+                }
                 <div className="row">
                     <div className="alpha-label">A</div>
                     <div className="alpha-label">B</div>

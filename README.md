@@ -40,6 +40,11 @@
 - The fishy queen behaves exactly how the queen does in normal chess.
 - When the fishy queen is taken, the fishy queen is removed from the board. 
 
+### Bear
+- The bear begins in the middle of the board. Until a player moves the bear to a valid position, the bear is not in play. The game proceeds as if the bear does not exist.
+- Either player can take control of the bear on their turn. From the center of the board, the bear must first move to positions `D4, D5, E4, or E5`. From there, either player can move the bear to any of the 8 adjacent positions (including diagonals). 
+- The bear cannot take pieces. However, the bear can be taken. The monkey may also jump over the bear, provided it is in a valid space--the center of the board is not a valid space. 
+
 ## Win Condition
 - The game is over when both the king and queen are captured. The jail for the white king and queen is next the the A file; the jail for the black king and queen is next to the H file. The jail cells are on the 4th and 5th rank. 
 - When a king or queen is captured, the player that captured the king or queen can select which jail square (4th or 5th rank) to put the captured piece into. 

@@ -191,6 +191,11 @@ export var init_board_state = [
         isWhite: false,
         jailed: false,
     },
+    {
+        type: "bear",
+        position: "center",
+        isWhite: false,
+    }
 ]
 
 export function getPath(piece, color) {

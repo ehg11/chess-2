@@ -5,6 +5,7 @@ body {
 }
 
 .board {
+    position: relative;
     margin: 0px 50px;
 }
 
@@ -45,7 +46,7 @@ body {
     filter: brightness(85%);
 }
 
-.square:hover {
+.square:hover, .bear:hover {
     filter: brightness(95%)
 }
 
@@ -281,5 +282,14 @@ body {
 
 .forfeit-button:hover {
     background-color: #d15a5a;
+}
+
+.bear {
+    all: unset;
+    z-index: 100;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
