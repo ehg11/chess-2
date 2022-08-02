@@ -4,7 +4,8 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Board from "./Board.js";
 import Navbar from "./Navbar.js"
-import Modal from "./Modal.js"
+// import Modal from "./Modal.js"
+import PieceInfo from "./PieceInfo.js"
 
 export default function App() {
 
@@ -22,11 +23,7 @@ export default function App() {
                 />
                 <div className="grow">
                     { show_modal &&
-                        <Modal 
-                            title="pog"
-                            body="pog body"
-                            click={() => toggleModal()}
-                        />
+                        <PieceInfo close={() => toggleModal()} />
                     }
                     <Routes>
                         <Route path="/" element={<Board />}/>

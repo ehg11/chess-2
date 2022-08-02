@@ -1,7 +1,7 @@
 # Rules
 
 ## Pieces
-### Rook
+### Crow
 - Can move anywhere
 - If the opponent took a piece in the previous turn, can take a piece in any of the four main directions (not diagonal)
 - Note: capturing the king or queen does not enable the rook to take a piece. See [Win Condition](#win-condition)
