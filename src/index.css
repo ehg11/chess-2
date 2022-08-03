@@ -298,11 +298,16 @@ body {
 }
 
 .nav {
+    position: fixed;
     width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+    height: fit-content;
     margin: 0px;
+    margin-right: 100px;
     background: var(--navbar-color);
     border-radius: 999px;
-    padding: 0px 0px;
+    padding: 0px 0px 10px;
 }
 
 .nav-align {
@@ -315,6 +320,7 @@ body {
 }
 
 .grow {
+    margin-left: 100px;
     flex: 1;
 }
 
@@ -340,10 +346,14 @@ body {
 }
 
 .nav > .center-col > * {
-    width: auto;
-    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80%;
+    height: 80%;
     border-radius: 100px;
     background: var(--navbar-color);
+    overflow: hidden;
 }
 
 .nav > .center-col > *:hover {
@@ -437,8 +447,8 @@ body {
     align-self: center;
     height: auto;
     width: auto;
-    max-width: 640px;
-    max-height: 640px;
+    max-width: 128px;
+    max-height: 128px;
 }
 
 li:not(:last-child) { 
@@ -463,4 +473,17 @@ li:not(:last-child) {
 .body::-webkit-scrollbar {
     width: 24px;
     background-color: transparent;
+}
+
+.navbar-button {
+    width: auto;
+    height: auto;
+    max-width: 60%;
+    max-height: 60%;
+    color: #737373;
+    padding: 10px;
+}
+
+.rules {
+    margin: 30px;
 }

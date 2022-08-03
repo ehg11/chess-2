@@ -281,6 +281,29 @@ export const piece_details = {
         </div>
 }
 
+export const win_desc = 
+<div>
+    <ul>
+        <li>The game is over when both the king and queen are captured. The jail for the white king and queen is next the the A file; the jail for the black king and queen is next to the H file. The jail cells are on the 4th and 5th rank. </li>
+        <li>When a king or queen is captured, the player that captured the king or queen can select which jail square (4th or 5th rank) to put the captured piece into. </li>
+        <li><h3 id="the-banana-catch">The Banana Catch</h3>
+    <ul>
+        <li>If the king has his banana, he can be rescued by the monkey.</li>
+        <li>The <strong>Banana Catch</strong> can be performed under the following conditions:<ul>
+            <li>The monkey is directly adjacent to the king of the same color. </li>
+            <li>The monkey can swing to a different spot on the board.</li>
+            <li>The king is holding a banana.</li>
+            </ul>
+        </li>
+    <li>If the above three conditions are satisfied, the <strong>Banana Catch</strong> can be performed. The monkey may jump into the jail and rescue the king. The king is left on the space the monkey rescued him from (adjacent to the jail) and the monkey MUST continue jumping to an available position. </li>
+    <li>Upon reaching the available position, the monkey may no longer jump. He must rest and consume the banana. </li>
+    <li>The rescued king loses his banana. If a king loses his banana, he can no longer be rescued.</li>
+    </ul>
+    </li>
+    <li>The game is only over once both the king and queen are captured. This is the case even if the king has his banana. The fishy queen cannot be captured. The victor is the player who successfully captured both the opposing king and queen.</li>
+    </ul>
+</div>
+
 export function getPath(piece, color) {
     if (!piece) {
         return "";
